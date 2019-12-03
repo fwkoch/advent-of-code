@@ -1,12 +1,20 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "main.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-    int mass;
-    printf("Enter mass: ");
-    scanf("%d", &mass);
-    printf("Fuel: %d \n", mass_to_fuel(mass));
+    char const* const file_name = argv[1];
+    FILE* file = fopen(file_name, "r");
+    char line[256];
+    int total_fuel = 0;
+    while (fgets(line, sizeof(line), file)) {
+        int mass = atoi(line);
+        int fuel = mass_to_fuel(mass);
+        total_fuel = total_fuel + fuel;
+    }
+    fclose(file);
+    printf("%d\n", total_fuel);
     return 0;
 }
 
