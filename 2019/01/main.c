@@ -20,5 +20,9 @@ int main(int argc, char* argv[])
 
 int mass_to_fuel(int mass)
 {
-    return mass/3 - 2;
+    int fuel = mass/3 - 2;
+    if (fuel < 0) {
+        return 0;
+    }
+    return fuel + mass_to_fuel(fuel);
 }
