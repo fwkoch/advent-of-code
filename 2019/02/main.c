@@ -5,21 +5,32 @@
 
 int main(int argc, char* argv[])
 {
-    char const* const file_name = argv[1];
-    FILE* file = fopen(file_name, "r");
-    char line[1024];
-    fgets(line, sizeof(line), file);
-    fclose(file);
-    printf("%s\n", line);
-    int intcode[256];
-    int length = intcode_from_csv_line(line, intcode);
-    print_intcode(length, intcode);
-    intcode[1] = 12;
-    intcode[2] = 2;
-    print_intcode(length, intcode);
-    int status = process_intcode(length, intcode);
-    print_intcode(length, intcode);
-    return status;
+    for (int noun = 0; noun < 100; noun++) {
+        for (int verb = 0; verb < 100; verb++) {
+            char const* const file_name = argv[1];
+            FILE* file = fopen(file_name, "r");
+            char line[1024];
+            fgets(line, sizeof(line), file);
+            fclose(file);
+            int intcode[256];
+            int length = intcode_from_csv_line(line, intcode);
+            intcode[1] = noun;
+            intcode[2] = verb;
+            int status = process_intcode(length, intcode);
+            if (status != 0) {
+                return status;
+            }
+            int output = intcode[0];
+            printf("noun: %d ", noun);
+            printf("verb: %d ", verb);
+            printf("out: %d\n", output);
+            if (output == 19690720) {
+                printf("100 * noun + verb: %d\n", 100 * noun + verb);
+                return 0;
+            }
+        }
+    }
+    return 1;
 }
 
 void print_intcode(int length, int *intcode)
@@ -53,11 +64,9 @@ int process_intcode(int length, int *intcode)
         } else if (intcode[i] == 2) {
             intcode[intcode[i+3]] = intcode[intcode[i+1]] * intcode[intcode[i+2]];
             i = i + 4;
-        } else if (intcode[i] == 99) {
-            return 0;
         } else {
             return 1;
         }
     }
-    return 1;
+    return 0;
 }
