@@ -140,6 +140,7 @@ int compare_xy_locations(int moves, int *xmoves, int *ymoves, int locations, int
     int* moves_loc;
     int* still_loc;
     int distance = 0;
+    int travel = 0;
     for (int i=0; i<moves; i++) {
         if (xmoves[i] != 0) {
             // printf("x steps: %d\n", xmoves[i]);
@@ -155,11 +156,12 @@ int compare_xy_locations(int moves, int *xmoves, int *ymoves, int locations, int
         for (int j=0; j<abs(num_steps); j++) {
             *moves_loc += num_steps / abs(num_steps);
             index++;
+            travel++;
             for (int k=0; k<locations; k++) {
                 if (xlocs[k] == xloc && ylocs[k] == yloc) {
-                    printf("Meet at (%d, %d) - distance of %d", xloc, yloc, abs(xloc)+abs(yloc));
-                    if (distance == 0 || distance > abs(xloc)+abs(yloc)) {
-                        distance = abs(xloc)+abs(yloc);
+                    printf("Meet at (%d, %d) - travel distance of %d", xloc, yloc, k+travel);
+                    if (distance == 0 || distance > k+travel) {
+                        distance = k+travel;
                         printf(" - new minimum!\n");
                     } else {
                         printf("\n");
