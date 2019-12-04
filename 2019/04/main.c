@@ -7,6 +7,10 @@ int main()
 {
     int minimum = 307237;
     int maximum = 769058;
+    // int input = 111122;
+    // if (validate(input) == 0) {
+    //     printf("valid: %d\n", input);
+    // }
     int valid = 0;
     for (int input=minimum; input<=maximum; input++) {
         if (validate(input) == 0) {
@@ -32,7 +36,19 @@ int validate(int input) {
     if (a > b || b > c || c > d || d > e || e > f) {
         return 1;
     }
-    if (a == b || b == c || c == d || d == e || e == f) {
+    if (a == b && b != c) {
+        return 0;
+    }
+    if (a != b && b == c && c != d) {
+        return 0;
+    }
+    if (b != c && c == d && d != e) {
+        return 0;
+    }
+    if (c != d && d == e && e != f) {
+        return 0;
+    }
+    if (d != e && e == f) {
         return 0;
     }
     return 1;
