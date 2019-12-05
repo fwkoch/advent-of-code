@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[])
 {
-    int input = 1;
+    int input = 5;
     char const* const file_name = argv[1];
     FILE* file = fopen(file_name, "r");
     char line[4096];
@@ -42,6 +42,7 @@ int intcode_from_csv_line(char *line, int *intcode)
 
 int process_intcode(int length, int *intcode, int input)
 {
+    printf("input: %d\n", input);
     int opcode;
     int param_mode_one;
     int param_mode_two;
@@ -51,10 +52,8 @@ int process_intcode(int length, int *intcode, int input)
     while (intcode[i] != 99) {
         opcode = intcode[i];
         param_mode_two = opcode / 1000;
-        // printf("param mode 2: %d\n", param_mode_two);
         opcode = opcode - param_mode_two * 1000;
         param_mode_one = opcode / 100;
-        // printf("param mode 1: %d\n", param_mode_one);
         opcode = opcode - param_mode_one * 100;
         if (param_mode_one == 0) {
             param_one = intcode[intcode[i+1]];
@@ -79,6 +78,32 @@ int process_intcode(int length, int *intcode, int input)
             input = param_one;
             printf("%d\n", input);
             i = i + 2;
+        } else if (opcode == 5) {
+            if (param_one != 0) {
+                i = param_two;
+            } else {
+                i = i + 3;
+            }
+        } else if (opcode == 6) {
+            if (param_one == 0) {
+                i = param_two;
+            } else {
+                i = i + 3;
+            }
+        } else if (opcode == 7) {
+            if (param_one < param_two) {
+                intcode[intcode[i+3]] = 1;
+            } else {
+                intcode[intcode[i+3]] = 0;
+            }
+            i = i + 4;
+        } else if (opcode == 8) {
+            if (param_one == param_two) {
+                intcode[intcode[i+3]] = 1;
+            } else {
+                intcode[intcode[i+3]] = 0;
+            }
+            i = i + 4;
         } else {
             printf("something went wrong\n");
             return 1;
