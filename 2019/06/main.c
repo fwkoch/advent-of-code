@@ -54,11 +54,11 @@ int main(int argc, char* argv[])
         center->direct_orbiters[center->direct_orbits] = satellite;
         center->direct_orbits++;
 
-        printf("center: %s  - orbiters:", center->name);
-        for (int i = 0; i < center->direct_orbits; i++) {
-            printf(" %s", center->direct_orbiters[i]->name);
-        }
-        printf("\n");
+        // printf("center: %s  - orbiters:", center->name);
+        // for (int i = 0; i < center->direct_orbits; i++) {
+        //     printf(" %s", center->direct_orbiters[i]->name);
+        // }
+        // printf("\n");
     }
     fclose(file);
 
@@ -76,8 +76,15 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    int orbits = count_total_orbits(planets[com_index]);
-    printf("Total orbits: %d\n", orbits);
+    // int orbits = count_total_orbits(planets[com_index]);
+    // printf("Total orbits: %d\n", orbits);
+
+    // int steps = count_steps_outward(planets[com_index], "YOU");
+    // printf("Steps to YOU: %d\n", steps);
+
+    int distance = find_shortest_distance(planets, ct, "YOU", "SAN");
+    printf("Shortest path: %d\n", distance);
+    printf("Total transfers: %d\n", distance-2);
 
     return 0;
 }
@@ -98,4 +105,55 @@ int count_total_orbits(struct Planet planet)
         total_orbits += count_total_orbits(*planet.direct_orbiters[i]);
     }
     return total_orbits;
+}
+
+int count_steps_outward(struct Planet start, char end[3])
+{
+    if (strncmp(start.name, end, 3) == 0) {
+        return 0;
+    }
+    int steps = -1;
+    for (int i = 0; i < start.direct_orbits; i++) {
+        struct Planet orbiter = *start.direct_orbiters[i];
+        int count = count_steps_outward(orbiter, end);
+        if (count < 0) {
+            continue;
+        }
+        steps = 1 + count;
+        break;
+    }
+    return steps;
+}
+
+int find_shortest_distance(struct Planet* planets, int num_planets, char node_one[3], char node_two[3])
+{
+
+    if (strncmp(node_one, node_two, 3) == 0) {
+        return 0;
+    }
+    struct Planet* common_ancestor = NULL;
+    int distance = 0;
+    for (int i = 0; i < num_planets; i++) {
+        printf("Checking planet %s\n", planets[i].name);
+        int node_one_distance = count_steps_outward(planets[i], node_one);
+        printf("Distance to %s: %d\n", node_one, node_one_distance);
+        if (node_one_distance < 0) {
+            continue;
+        }
+        int node_two_distance = count_steps_outward(planets[i], node_two);
+        printf("Distance to %s: %d\n", node_two, node_two_distance);
+        if (node_two_distance < 0) {
+            continue;
+        }
+        int total_distance = node_one_distance + node_two_distance;
+        printf("Found common ancestor: %s - distance: %d", planets[i].name, total_distance);
+        if (!common_ancestor || total_distance < distance) {
+            printf(" - New closest\n");
+            common_ancestor = &planets[i];
+            distance = total_distance;
+        } else {
+            printf("\n");
+        }
+    }
+    return distance;
 }
