@@ -5,16 +5,15 @@
 
 int main(int argc, char* argv[])
 {
-    int phases[5] = {1, 2, 3, 4, 5};
+    int max_thruster_signal = 0;
+
+    // Iterate through all possible permutations of phase input
+    int phases[5] = {5, 6, 7, 8, 9};
     int phase_settings[120*5] = {};
     int* pointer = &phase_settings[0];
     permute(phases, 0, 4, pointer);
-    for (int i = 0; i <600; i++) {
-        phase_settings[i] = phase_settings[i] - 1;
-    }
-    print_array(600, phase_settings);
-    int max_thruster_signal = 0;
     for (int i = 0; i < 120; i++) {
+        // Read intcode
         char const* const file_name = argv[1];
         FILE* file = fopen(file_name, "r");
         char line[4096];
@@ -22,27 +21,44 @@ int main(int argc, char* argv[])
         fclose(file);
         int intcode[4096];
         int length = intcode_from_csv_line(line, intcode);
-        // print_array(length, intcode);
-        // printf("%d ", phase_settings[i * 5 + 0]);
-        // printf("%d ", phase_settings[i * 5 + 1]);
-        // printf("%d ", phase_settings[i * 5 + 2]);
-        // printf("%d ", phase_settings[i * 5 + 3]);
-        // printf("%d\n", phase_settings[i * 5 + 4]);
+        // Copy intcode into 5 separate amplifiers
+        int intcodes[5][length];
+        for (int j = 0; j < 5; j++) {
+            for (int k = 0; k < length; k++) {
+                intcodes[j][k] = intcode[k];
+            }
+        }
+        int pointers[5] = {};
         int amp_input = 0;
-        amp_input = process_intcode(length, intcode, phase_settings[i * 5 + 0], amp_input);
-        amp_input = process_intcode(length, intcode, phase_settings[i * 5 + 1], amp_input);
-        amp_input = process_intcode(length, intcode, phase_settings[i * 5 + 2], amp_input);
-        amp_input = process_intcode(length, intcode, phase_settings[i * 5 + 3], amp_input);
-        amp_input = process_intcode(length, intcode, phase_settings[i * 5 + 4], amp_input);
-        if (amp_input > max_thruster_signal) {
-            max_thruster_signal = amp_input;
-            printf("New maximum found: %d", max_thruster_signal);
-            printf(" --- Phase setting: ");
-            printf("%d ", phase_settings[i * 5 + 0]);
-            printf("%d ", phase_settings[i * 5 + 1]);
-            printf("%d ", phase_settings[i * 5 + 2]);
-            printf("%d ", phase_settings[i * 5 + 3]);
-            printf("%d\n", phase_settings[i * 5 + 4]);
+        // int iter = 0;
+        // printf("Iteration %d\n", iter);
+
+        // Initially process intcodes with two inputs
+        for (int j = 0; j < 5; j++) {
+            // printf("Amplifier %d -- ", j);
+            amp_input = process_intcode(length, j, pointers, intcodes[j], phase_settings[i * 5 + j], amp_input);
+            // printf("\n");
+        }
+        // Continue to pass outputs as inputs until amplifiers stop
+        while (amp_input >= 0) {
+            // iter++;
+            // printf("Iteration %d\n", iter);
+            for (int j = 0; j < 5; j++) {
+                // printf("Amplifier %d -- ", j);
+                amp_input = process_intcode(length, j, pointers, intcodes[j], amp_input, 0);
+                // printf("\n");
+                if (j == 4 && amp_input > max_thruster_signal) {
+                    max_thruster_signal = amp_input;
+                    printf("New maximum found: %d", max_thruster_signal);
+                    printf(" --- Phase setting: ");
+                    printf("%d ", phase_settings[i * 5 + 0]);
+                    printf("%d ", phase_settings[i * 5 + 1]);
+                    printf("%d ", phase_settings[i * 5 + 2]);
+                    printf("%d ", phase_settings[i * 5 + 3]);
+                    printf("%d\n", phase_settings[i * 5 + 4]);
+
+                }
+            }
         }
     }
     return 0;
@@ -69,17 +85,17 @@ int intcode_from_csv_line(char *line, int *intcode)
     return ct;
 }
 
-int process_intcode(int length, int *intcode, int phase_input, int amp_input)
+int process_intcode(int length, int pi, int *pointers, int *intcode, int input_one, int input_two)
 {
-    // printf("inputs: %d, %d\n", phase_input, amp_input);
-    int input = phase_input;
+    int input = input_one;
     int opcode;
     int param_mode_one;
     int param_mode_two;
     int param_one;
     int param_two;
-    int i = 0;
-    int output;
+    int i = pointers[pi];
+    // printf("start i: %d -- ", i);
+    int output = -1;
     while (intcode[i] != 99) {
         opcode = intcode[i];
         param_mode_two = opcode / 1000;
@@ -103,13 +119,17 @@ int process_intcode(int length, int *intcode, int phase_input, int amp_input)
             intcode[intcode[i+3]] = param_one * param_two;
             i = i + 4;
         } else if (opcode == 3) {
+            // printf("input: %d -- ", input);
             intcode[intcode[i+1]] = input;
-            input = amp_input;
+            input = input_two;
             i = i + 2;
         } else if (opcode == 4) {
             output = param_one;
-            // printf("%d\n", output);
+            // printf("output: %d -- ", output);
             i = i + 2;
+            // printf("end i: %d -- ", i);
+            pointers[pi] = i;
+            return output;
         } else if (opcode == 5) {
             if (param_one != 0) {
                 i = param_two;
@@ -137,10 +157,11 @@ int process_intcode(int length, int *intcode, int phase_input, int amp_input)
             }
             i = i + 4;
         } else {
-            printf("something went wrong\n");
+            printf("something went wrong");
             return -1;
         }
     }
+    // printf("Done");
     return output;
 }
 
@@ -154,7 +175,6 @@ void swap(int* x, int* y)
 void permute(int* array, int start, int end, int* pointer)
 {
     if (start == end){
-        // print_array(5, array);
         int i = 0;
         while (pointer[i] > 0) {
             i++;
