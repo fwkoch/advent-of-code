@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
     char* file_name = argv[1];
     long intcode[4096] = {};
     int length = intcode_from_csv_line(file_name, intcode);
-    long output = process_intcode(length, intcode, 1);
+    long output = process_intcode(length, intcode, 2);
     printf("%ld\n", output);
     return 0;
 }
@@ -59,7 +59,7 @@ long process_intcode(int length, long *intcode, int input)
     int val;
     long output = -1;
     while (intcode[i] != 99) {
-        printf("intcode: %ld %ld %ld %ld\n", intcode[i], intcode[i+1], intcode[i+2], intcode[i+3]);
+        // printf("intcode: %ld %ld %ld %ld\n", intcode[i], intcode[i+1], intcode[i+2], intcode[i+3]);
         opcode = intcode[i];
         param_mode_three = opcode / 10000;
         opcode = opcode - param_mode_three * 10000;
