@@ -9,30 +9,35 @@ int main(int argc, char* argv[])
     long intcode[4096] = {};
     intcode_from_csv_line(file_name, intcode);
     long* pointer = &intcode[0];
+    int relative_base = 0;
+    int* rb_pointer = &relative_base;
 
     int xlocs[8192] = {};
     int ylocs[8192] = {};
     int color[8192] = {};
     int x = 0;
     int y = 0;
-    int length = 0;
+    int length = 1;
+    xlocs[0] = 0;
+    ylocs[0] = 0;
+    color[0] = 1;
     int index;
     int input = 0;
     char facing = '^';
     while (input >= 0) {
+        printf("(%d, %d) %c\n", x, y, facing);
         index = get_index(x, y, length, xlocs, ylocs, color);
         if (index == length) {
             length++;
         }
         input = color[index];
-        input = process_intcode(intcode, &pointer, input);
+        input = process_intcode(intcode, &pointer, rb_pointer, input);
         color[index] = input;
-        input = process_intcode(intcode, &pointer, input);
+        input = process_intcode(intcode, &pointer, rb_pointer, input);
         if (input >= 0) {
             x = get_x(x, facing, input);
             y = get_y(y, facing, input);
             facing = get_facing(facing, input);
-            printf("(%d, %d) %c\n", x, y, facing);
         }
     }
 
@@ -135,7 +140,7 @@ int intcode_from_csv_line(char* file_name, long *intcode)
     return ct;
 }
 
-int process_intcode(long *intcode, long **pointer, long input)
+int process_intcode(long *intcode, long **pointer, int *rb_pointer, long input)
 {
     int opcode;
     int param_mode_one;
@@ -143,7 +148,6 @@ int process_intcode(long *intcode, long **pointer, long input)
     int param_mode_three;
     long param_one;
     long param_two;
-    int relative_base = 0;
     int val;
     int output = -1;
     while (**pointer != 99) {
@@ -159,7 +163,7 @@ int process_intcode(long *intcode, long **pointer, long input)
         } else if (param_mode_one == 1) {
             param_one = *(*pointer+1);
         } else {
-            param_one = intcode[relative_base + *(*pointer+1)];
+            param_one = intcode[*rb_pointer + *(*pointer+1)];
         }
         if (opcode == 3 || opcode == 4 || opcode == 9) {
             param_two = 0;
@@ -168,27 +172,27 @@ int process_intcode(long *intcode, long **pointer, long input)
         } else if (param_mode_two == 1) {
             param_two = *(*pointer+2);
         } else {
-            param_two = intcode[relative_base + *(*pointer+2)];
+            param_two = intcode[*rb_pointer + *(*pointer+2)];
         }
         if (opcode == 1) {
             if (param_mode_three == 0) {
                 intcode[*(*pointer+3)] = param_one + param_two;
             } else {
-                intcode[relative_base + *(*pointer+3)] = param_one + param_two;
+                intcode[*rb_pointer + *(*pointer+3)] = param_one + param_two;
             }
             *pointer += 4;
         } else if (opcode == 2) {
             if (param_mode_three == 0) {
                 intcode[*(*pointer+3)] = param_one * param_two;
             } else {
-                intcode[relative_base + *(*pointer+3)] = param_one * param_two;
+                intcode[*rb_pointer + *(*pointer+3)] = param_one * param_two;
             }
             *pointer += 4;
         } else if (opcode == 3) {
             if (param_mode_one == 0) {
                 intcode[*(*pointer+1)] = input;
             } else {
-                intcode[relative_base + *(*pointer+1)] = input;
+                intcode[*rb_pointer + *(*pointer+1)] = input;
             }
             *pointer += 2;
         } else if (opcode == 4) {
@@ -216,7 +220,7 @@ int process_intcode(long *intcode, long **pointer, long input)
             if (param_mode_three == 0) {
                 intcode[*(*pointer+3)] = val;
             } else {
-                intcode[relative_base + *(*pointer+3)] = val;
+                intcode[*rb_pointer + *(*pointer+3)] = val;
             }
             *pointer += 4;
         } else if (opcode == 8) {
@@ -228,11 +232,11 @@ int process_intcode(long *intcode, long **pointer, long input)
             if (param_mode_three == 0) {
                 intcode[*(*pointer+3)] = val;
             } else {
-                intcode[relative_base + *(*pointer+3)] = val;
+                intcode[*rb_pointer + *(*pointer+3)] = val;
             }
             *pointer += 4;
         } else if (opcode == 9) {
-            relative_base += param_one;
+            *rb_pointer += param_one;
             *pointer += 2;
         } else {
             printf("something went wrong with intcode...\n");
