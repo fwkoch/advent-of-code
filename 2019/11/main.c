@@ -40,9 +40,9 @@ int main(int argc, char* argv[])
             facing = get_facing(facing, input);
         }
     }
-
-
     printf("%d\n", length);
+    printf("\n");
+    print_array_2d(length, xlocs, ylocs, color);
     return 0;
 }
 
@@ -113,6 +113,40 @@ void print_array(int length, long *array)
         printf("%ld ", array[i]);
     }
     printf("\n");
+}
+
+void print_array_2d(int length, int *xlocs, int *ylocs, int *color)
+{
+    int min_x = 0;
+    int max_x = 0;
+    int min_y = 0;
+    int max_y = 0;
+    int index;
+    for (int i = 0; i < length; i++) {
+        if (xlocs[i] > max_x) {
+            max_x = xlocs[i];
+        }
+        if (xlocs[i] < min_x) {
+            min_x = xlocs[i];
+        }
+        if (ylocs[i] > max_y) {
+            max_y = ylocs[i];
+        }
+        if (ylocs[i] < min_y) {
+            min_y = ylocs[i];
+        }
+    }
+    for (int j = max_y; j >= min_y; j--) {
+        for (int i = min_x; i <= max_x; i++) {
+            index = get_index(i, j, length, xlocs, ylocs, color);
+            if (color[index] == 1) {
+                printf("#");
+            } else {
+                printf(" ");
+            }
+        }
+        printf("\n");
+    }
 }
 
 int intcode_from_csv_line(char* file_name, long *intcode)
