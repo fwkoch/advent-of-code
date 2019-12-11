@@ -5,4 +5,4 @@ int get_x(int x, char facing, int input);
 int get_y(int y, char facing, int input);
 char get_facing(char facing, int input);
 int get_index(int x, int y, int length, int *xlocs, int *ylocs, int *color);
-void print_array_2d(int length, int *xlocs, int *ylocs, int *color);
+void print_array_2d(int length, int *xlocs, int *ylocs, int *color, int robot_x, int robot_y, int robot_facing);

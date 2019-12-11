@@ -25,7 +25,10 @@ int main(int argc, char* argv[])
     int input = 0;
     char facing = '^';
     while (input >= 0) {
-        printf("(%d, %d) %c\n", x, y, facing);
+        print_array_2d(length, xlocs, ylocs, color, x, y, facing);
+        printf("\n\n\n\n\n\n\n\n\n\n");
+        getchar();
+        // printf("(%d, %d) %c\n", x, y, facing);
         index = get_index(x, y, length, xlocs, ylocs, color);
         if (index == length) {
             length++;
@@ -40,9 +43,9 @@ int main(int argc, char* argv[])
             facing = get_facing(facing, input);
         }
     }
-    printf("%d\n", length);
-    printf("\n");
-    print_array_2d(length, xlocs, ylocs, color);
+    // printf("%d\n", length);
+    // printf("\n");
+    // print_array_2d(length, xlocs, ylocs, color);
     return 0;
 }
 
@@ -115,12 +118,12 @@ void print_array(int length, long *array)
     printf("\n");
 }
 
-void print_array_2d(int length, int *xlocs, int *ylocs, int *color)
+void print_array_2d(int length, int *xlocs, int *ylocs, int *color, int robot_x, int robot_y, int robot_facing)
 {
-    int min_x = 0;
-    int max_x = 0;
-    int min_y = 0;
-    int max_y = 0;
+    int min_x = robot_x;
+    int max_x = robot_x;
+    int min_y = robot_y;
+    int max_y = robot_y;
     int index;
     for (int i = 0; i < length; i++) {
         if (xlocs[i] > max_x) {
@@ -139,10 +142,12 @@ void print_array_2d(int length, int *xlocs, int *ylocs, int *color)
     for (int j = max_y; j >= min_y; j--) {
         for (int i = min_x; i <= max_x; i++) {
             index = get_index(i, j, length, xlocs, ylocs, color);
-            if (color[index] == 1) {
+            if (i == robot_x && j == robot_y) {
+                printf("%c", robot_facing);
+            } else if (color[index] == 1) {
                 printf("#");
             } else {
-                printf(" ");
+                printf(".");
             }
         }
         printf("\n");
