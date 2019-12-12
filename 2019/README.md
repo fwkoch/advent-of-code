@@ -74,3 +74,10 @@ I'm using these puzzles to learn C, since I almost always only use Python.
   better understanding of them today, since I refactored my intcode
   computer to use them to keep track of position over multiple
   function runs.
+
+### [Day 12](12) - Lunar motion
+
+- No profoundly new concepts
+- Small things: typedef, do-while loop
+- I was happy to implement Least Common Multiple algorithm without
+  help, especially after Day 7's unsatisfying permutations.
