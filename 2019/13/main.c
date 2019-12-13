@@ -20,8 +20,8 @@ int main(int argc, char* argv[])
 
     int score = 0;
 
-    while (pointer != NULL) {
-        while (input == NULL) {
+    while (1) {
+        while (pointer != NULL && input == NULL) {
             if (index >= capacity) {
                 capacity = capacity * 2;
                 screen = realloc(screen, capacity * sizeof(int));
@@ -30,10 +30,14 @@ int main(int argc, char* argv[])
             index++;
             output = process_intcode(intcode, &pointer, &relative_base, &input);
         }
+        if (pointer == NULL) {
+            break;
+        }
         refresh(&index, screen, &score);
         *input = choose_input(index, screen);
         output = process_intcode(intcode, &pointer, &relative_base, &input);
     }
+    printf("Final score: %d\n", score);
     return 0;
 }
 
