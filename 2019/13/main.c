@@ -20,6 +20,10 @@ int main(int argc, char* argv[])
 
     int score = 0;
 
+    printf("Autoplay? (y/n): ");
+    char autoplay;
+    scanf(" %c", &autoplay);
+
     while (1) {
         while (pointer != NULL && input == NULL) {
             if (index >= capacity) {
@@ -34,10 +38,14 @@ int main(int argc, char* argv[])
             break;
         }
         refresh(&index, screen, &score);
-        *input = choose_input(index, screen);
+        if (autoplay == 'y') {
+            *input = machine_input(index, screen);
+        } else {
+            *input = user_input(index, screen);
+        }
         output = process_intcode(intcode, &pointer, &relative_base, &input);
     }
-    printf("Final score: %d\n", score);
+    refresh(&index, screen, &score);
     return 0;
 }
 
@@ -49,7 +57,32 @@ void print_array(int length, int *array)
     printf("\n");
 }
 
-int choose_input(int index, int *screen)
+int machine_input(int index, int *screen)
+{
+    int paddle = 0;
+    int ball = 0;
+    for (int i = 0; i < index/3; i++) {
+        if (screen[i*3 + 2] == 3) {
+            paddle = screen[i*3];
+            break;
+        }
+    }
+    for (int i = 0; i < index/3; i++) {
+        if (screen[i*3 + 2] == 4) {
+            ball = screen[i*3];
+            break;
+        }
+    }
+    if (paddle == ball) {
+        return 0;
+    }
+    if (paddle < ball) {
+        return 1;
+    }
+    return -1;
+}
+
+int user_input(int index, int *screen)
 {
     char joystick;
     int input;
