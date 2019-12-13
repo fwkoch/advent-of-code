@@ -81,3 +81,9 @@ I'm using these puzzles to learn C, since I almost always only use Python.
 - Small things: typedef, do-while loop
 - I was happy to implement Least Common Multiple algorithm without
   help, especially after Day 7's unsatisfying permutations.
+
+### [Day 13](13) - Intcode v5
+
+- Dynamic array allocation with malloc and realloc
+- Null pointers
+- Building Doxygen docs
