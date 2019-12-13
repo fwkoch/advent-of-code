@@ -24,27 +24,8 @@ int main(int argc, char* argv[])
         index++;
         output = process_intcode(intcode, &pointer, &relative_base, 0);
     }
-    int total_block_tiles = 0;
-    for (int i = 2; i < index; i += 3) {
-        if (outputs[i] == 2) {
-            total_block_tiles++;
-        }
-    }
-    printf("Total block tiles: %d\n", total_block_tiles);
+    print_screen(index, outputs);
     return 0;
-}
-
-int get_index(int x, int y, int length, int *xlocs, int *ylocs, int *color)
-{
-    for (int i = 0; i < length; i++) {
-        if (x == xlocs[i] && y == ylocs[i]) {
-            return i;
-        }
-    }
-    xlocs[length] = x;
-    ylocs[length] = y;
-    color[length] = 0;
-    return length;
 }
 
 void print_array(int length, int *array)
@@ -53,6 +34,71 @@ void print_array(int length, int *array)
         printf("%d ", array[i]);
     }
     printf("\n");
+}
+
+void print_screen(int length, int *outputs)
+{
+    int score = 0;
+    int x, y, id;
+    int* xvals = malloc(sizeof(int) * length/3);
+    int* yvals = malloc(sizeof(int) * length/3);
+    int* idvals = malloc(sizeof(int) * length/3);
+    int xrange[2] = {outputs[0], outputs[0]};
+    int yrange[2] = {outputs[1], outputs[1]};
+    for (int i = 0; i < length/3; i++) {
+        x = outputs[3*i];
+        y = outputs[3*i + 1];
+        id = outputs[3*i + 2];
+        if (x == -1 && y == 0) {
+            score = id;
+            continue;
+        }
+        xvals[i] = x;
+        yvals[i] = y;
+        if (x < xrange[0]) {
+            xrange[0] = x;
+        }
+        if (x > xrange[1]) {
+            xrange[1] = x;
+        }
+        if (y < yrange[0]) {
+            yrange[0] = y;
+        }
+        if (y > yrange[1]) {
+            yrange[1] = y;
+        }
+        idvals[i] = id;
+    }
+    for (int j = yrange[0]; j <= yrange[1]; j++) {
+        for (int i = xrange[0]; i <= xrange[1]; i++) {
+            id = get_id(i, j, length, xvals, yvals, idvals);
+            if (id == 0) {
+                printf(" ");
+            } else if (id == 1) {
+                printf("█");
+            } else if (id == 2) {
+                printf("▒");
+            } else if (id == 3) {
+                printf("═");
+            } else {
+                printf("o");
+            }
+        }
+        if (j == yrange[0]) {
+            printf(" SCORE: %d", score);
+        }
+        printf("\n");
+    }
+}
+
+int get_id(int x, int y, int length, int *xvals, int *yvals, int *idvals)
+{
+    for (int i = 0; i < length; i++) {
+        if (x == xvals[i] && y == yvals[i]) {
+            return idvals[i];
+        }
+    }
+    return 0;
 }
 
 int intcode_from_csv_line(char* file_name, long *intcode)
