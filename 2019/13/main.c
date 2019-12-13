@@ -3,6 +3,12 @@
 #include <string.h>
 #include "main.h"
 
+/** Execute breakout program.
+ *  Read intcode input from file, then render the breakout program
+ *  screen and gather game input, until program execution completes.
+ *  \param[in] argv The first command-line argument must be filename.
+ *  \return Return 0 upon successful program execution.
+ */
 int main(int argc, char* argv[])
 {
     char* file_name = argv[1];
@@ -41,7 +47,7 @@ int main(int argc, char* argv[])
         if (autoplay == 'y') {
             *input = machine_input(index, screen);
         } else {
-            *input = user_input(index, screen);
+            *input = user_input();
         }
         output = process_intcode(intcode, &pointer, &relative_base, &input);
     }
@@ -57,17 +63,17 @@ void print_array(int length, int *array)
     printf("\n");
 }
 
-int machine_input(int index, int *screen)
+int machine_input(int screen_length, int *screen)
 {
     int paddle = 0;
     int ball = 0;
-    for (int i = 0; i < index/3; i++) {
+    for (int i = 0; i < screen_length/3; i++) {
         if (screen[i*3 + 2] == 3) {
             paddle = screen[i*3];
             break;
         }
     }
-    for (int i = 0; i < index/3; i++) {
+    for (int i = 0; i < screen_length/3; i++) {
         if (screen[i*3 + 2] == 4) {
             ball = screen[i*3];
             break;
@@ -82,7 +88,7 @@ int machine_input(int index, int *screen)
     return -1;
 }
 
-int user_input(int index, int *screen)
+int user_input()
 {
     char joystick;
     int input;
@@ -102,7 +108,7 @@ int user_input(int index, int *screen)
     return input;
 }
 
-void refresh(int* index, int *screen, int *score)
+void refresh(int* screen_length, int *screen, int *score)
 {
     int length = *index/3;
     int x, y, id, prev_index;
