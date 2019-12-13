@@ -8,23 +8,45 @@ int main(int argc, char* argv[])
     char* file_name = argv[1];
     long intcode[8192] = {};
     intcode_from_csv_line(file_name, intcode);
+
     long* pointer = &intcode[0];
     int relative_base = 0;
+    int* input = NULL;
 
     int index = 0;
     int capacity = 2;
-    int* outputs = malloc(capacity * sizeof(int));
-    int output = process_intcode(intcode, &pointer, &relative_base, 0);
+    int* screen = malloc(capacity * sizeof(int));
+    int output = process_intcode(intcode, &pointer, &relative_base, &input);
+
+    char joystick;
+    int score = 0;
+
     while (pointer != NULL) {
-        if (index >= capacity) {
-            capacity = capacity * 2;
-            outputs = realloc(outputs, capacity * sizeof(int));
+        while (input == NULL) {
+            if (index >= capacity) {
+                capacity = capacity * 2;
+                screen = realloc(screen, capacity * sizeof(int));
+            }
+            screen[index] = output;
+            index++;
+            output = process_intcode(intcode, &pointer, &relative_base, &input);
         }
-        outputs[index] = output;
-        index++;
-        output = process_intcode(intcode, &pointer, &relative_base, 0);
+        refresh(&index, screen, &score);
+        do {
+            scanf(" %c", &joystick);
+            if (joystick == 'a' || joystick == 'j') {
+                *input = -1;
+            } else if (joystick == 'd' || joystick == 'l') {
+                *input = 1;
+            } else if (joystick == 's' || joystick == 'k') {
+                *input = 0;
+            } else {
+                *input = 2;
+            }
+
+        } while (*input != -1 && *input != 0 && *input != 1);
+        output = process_intcode(intcode, &pointer, &relative_base, &input);
     }
-    print_screen(index, outputs);
     return 0;
 }
 
@@ -36,21 +58,29 @@ void print_array(int length, int *array)
     printf("\n");
 }
 
-void print_screen(int length, int *outputs)
+void refresh(int* index, int *screen, int *score)
 {
-    int score = 0;
-    int x, y, id;
-    int* xvals = malloc(sizeof(int) * length/3);
-    int* yvals = malloc(sizeof(int) * length/3);
-    int* idvals = malloc(sizeof(int) * length/3);
-    int xrange[2] = {outputs[0], outputs[0]};
-    int yrange[2] = {outputs[1], outputs[1]};
-    for (int i = 0; i < length/3; i++) {
-        x = outputs[3*i];
-        y = outputs[3*i + 1];
-        id = outputs[3*i + 2];
-        if (x == -1 && y == 0) {
-            score = id;
+    int length = *index/3;
+    int x, y, id, prev_index;
+    int* xvals = malloc(sizeof(int) * length);
+    int* yvals = malloc(sizeof(int) * length);
+    int* idvals = malloc(sizeof(int) * length);
+    int xrange[2] = {screen[0], screen[0]};
+    int yrange[2] = {screen[1], screen[1]};
+
+    for (int i = 0; i < length; i++) {
+        x = screen[3*i];
+        y = screen[3*i + 1];
+        id = screen[3*i + 2];
+        if (x == -1 && y == 0 && id > 0) {
+            *score = id;
+            continue;
+        }
+        prev_index = get_index(x, y, i, xvals, yvals);
+        if (prev_index >= 0) {
+            screen[3*prev_index + 2] = id;
+            idvals[prev_index] = id;
+            *index = *index - 3;
             continue;
         }
         xvals[i] = x;
@@ -77,7 +107,7 @@ void print_screen(int length, int *outputs)
             } else if (id == 1) {
                 printf("█");
             } else if (id == 2) {
-                printf("▒");
+                printf("▓");
             } else if (id == 3) {
                 printf("═");
             } else {
@@ -85,20 +115,25 @@ void print_screen(int length, int *outputs)
             }
         }
         if (j == yrange[0]) {
-            printf(" SCORE: %d", score);
+            printf(" SCORE: %d", *score);
         }
         printf("\n");
     }
 }
 
-int get_id(int x, int y, int length, int *xvals, int *yvals, int *idvals)
+int get_index(int x, int y, int length, int *xvals, int *yvals)
 {
     for (int i = 0; i < length; i++) {
         if (x == xvals[i] && y == yvals[i]) {
-            return idvals[i];
+            return i;
         }
     }
-    return 0;
+    return -1;
+}
+
+int get_id(int x, int y, int length, int *xvals, int *yvals, int *idvals)
+{
+    return idvals[get_index(x, y, length, xvals, yvals)];
 }
 
 int intcode_from_csv_line(char* file_name, long *intcode)
@@ -126,15 +161,11 @@ int intcode_from_csv_line(char* file_name, long *intcode)
     return ct;
 }
 
-int process_intcode(long *intcode, long **pointer, int *rb_pointer, long input)
+int process_intcode(long *intcode, long **pointer, int *rb_pointer, int **input)
 {
-    int opcode;
-    int param_mode_one;
-    int param_mode_two;
-    int param_mode_three;
-    long param_one;
-    long param_two;
-    int val;
+    int opcode, val, a;
+    int param_mode_one, param_mode_two, param_mode_three;
+    long param_one, param_two;
     int output = -1;
     while (**pointer != 99) {
         opcode = **pointer;
@@ -175,13 +206,18 @@ int process_intcode(long *intcode, long **pointer, int *rb_pointer, long input)
             }
             *pointer += 4;
         } else if (opcode == 3) {
-            printf("we did not take any input...\n");
+            if (*input == NULL) {
+                a = 2;
+                *input = &a;
+                return output;
+            }
             if (param_mode_one == 0) {
-                intcode[*(*pointer+1)] = input;
+                intcode[*(*pointer+1)] = **input;
             } else {
-                intcode[*rb_pointer + *(*pointer+1)] = input;
+                intcode[*rb_pointer + *(*pointer+1)] = **input;
             }
             *pointer += 2;
+            *input = NULL;
         } else if (opcode == 4) {
             output = param_one;
             *pointer += 2;
