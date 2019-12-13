@@ -18,7 +18,6 @@ int main(int argc, char* argv[])
     int* screen = malloc(capacity * sizeof(int));
     int output = process_intcode(intcode, &pointer, &relative_base, &input);
 
-    char joystick;
     int score = 0;
 
     while (pointer != NULL) {
@@ -32,19 +31,7 @@ int main(int argc, char* argv[])
             output = process_intcode(intcode, &pointer, &relative_base, &input);
         }
         refresh(&index, screen, &score);
-        do {
-            scanf(" %c", &joystick);
-            if (joystick == 'a' || joystick == 'j') {
-                *input = -1;
-            } else if (joystick == 'd' || joystick == 'l') {
-                *input = 1;
-            } else if (joystick == 's' || joystick == 'k') {
-                *input = 0;
-            } else {
-                *input = 2;
-            }
-
-        } while (*input != -1 && *input != 0 && *input != 1);
+        *input = choose_input(index, screen);
         output = process_intcode(intcode, &pointer, &relative_base, &input);
     }
     return 0;
@@ -56,6 +43,26 @@ void print_array(int length, int *array)
         printf("%d ", array[i]);
     }
     printf("\n");
+}
+
+int choose_input(int index, int *screen)
+{
+    char joystick;
+    int input;
+    do {
+        scanf(" %c", &joystick);
+        if (joystick == 'a' || joystick == 'j') {
+            input = -1;
+        } else if (joystick == 'd' || joystick == 'l') {
+            input = 1;
+        } else if (joystick == 's' || joystick == 'k') {
+            input = 0;
+        } else {
+            input = 2;
+        }
+
+    } while (input != -1 && input != 0 && input != 1);
+    return input;
 }
 
 void refresh(int* index, int *screen, int *score)
