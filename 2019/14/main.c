@@ -5,23 +5,38 @@
 
 int main(int argc, char* argv[])
 {
-    Chemical* chemicals = malloc(96 * sizeof(Chemical));
-    int num_chemicals = 0;
-
     char* file_name = argv[1];
-    FILE* file = fopen(file_name, "r");
+    Chemical* chemicals = malloc(96 * sizeof(Chemical));
+
     char line[96];
-    while (fgets(line, sizeof(line), file)) {
-        chemical_from_line(line, &num_chemicals, chemicals);
+    int num_chemicals, success;
+    FILE* file;
+    long request = 0;
+    long increment = 1000000000000;
+    while (1) {
+        num_chemicals = 0;
+        file = fopen(file_name, "r");
+        while (fgets(line, sizeof(line), file)) {
+            chemical_from_line(line, &num_chemicals, chemicals);
+        }
+        fclose(file);
+        Chemical* fuel = find_chemical_by_name("FUEL ", &num_chemicals, chemicals);
+        Chemical* ore = find_chemical_by_name("ORE  ", &num_chemicals, chemicals);
+        ore->cache = 1000000000000;
+        printf("Asking for: %ld FUEL\n", request + increment);
+        success = fill_chemical_cache(fuel, request + increment);
+        if (success) {
+            printf("Success! Remaining ore: %ld\n", ore->cache);
+            request += increment;
+            continue;
+        }
+        printf("Failure.\n");
+        if (increment > 1) {
+            increment /= 10;
+            continue;
+        }
+        break;
     }
-    fclose(file);
-    for (int i = 0; i < num_chemicals; i++) {
-        print_chemical(&chemicals[i]);
-    }
-    Chemical* fuel = find_chemical_by_name("FUEL ", &num_chemicals, chemicals);
-    ask_for_chemical(fuel, 1);
-    Chemical* ore = find_chemical_by_name("ORE  ", &num_chemicals, chemicals);
-    printf("Total ore: %d\n", ore->cache);
     return 0;
 }
 
@@ -90,19 +105,31 @@ Chemical* find_chemical_by_name(char *name, int *num_chemicals, Chemical *chemic
     return &chemicals[*num_chemicals - 1];
 }
 
-void ask_for_chemical(Chemical *chemical, int amount)
+int fill_chemical_cache(Chemical *chemical, long amount)
 {
-
+    int success;
     if (strncmp(chemical->name, "ORE", 3) == 0) {
-        chemical->cache += amount;
-        return;
-    }
-    while (chemical->cache < amount) {
-        for (int i = 0; i < chemical->num_inputs; i++) {
-            ask_for_chemical(chemical->input_chemicals[i], chemical->input_quantities[i]);
+        if (chemical->cache < amount) {
+            return 0;
         }
-        chemical->cache += chemical->output_quantity;
+        return 1;
     }
+    if (chemical->cache < amount) {
+        long n_reactions = (amount - chemical->cache + chemical->output_quantity - 1) / chemical->output_quantity;
+        for (int i = 0; i < chemical->num_inputs; i++) {
+            success = fill_chemical_cache(chemical->input_chemicals[i], n_reactions * chemical->input_quantities[i]);
+            if (!success) {
+                return 0;
+            }
+            remove_from_cache(chemical->input_chemicals[i], n_reactions * chemical->input_quantities[i]);
+        }
+        chemical->cache += n_reactions * chemical->output_quantity;
+    }
+    return 1;
+}
+
+void remove_from_cache(Chemical *chemical, long amount)
+{
     chemical->cache -= amount;
 }
 
