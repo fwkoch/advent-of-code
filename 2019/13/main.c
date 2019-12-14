@@ -110,7 +110,7 @@ int user_input()
 
 void refresh(int* screen_length, int *screen, int *score)
 {
-    int length = *index/3;
+    int length = *screen_length/3;
     int x, y, id, prev_index;
     int* xvals = malloc(sizeof(int) * length);
     int* yvals = malloc(sizeof(int) * length);
@@ -130,7 +130,7 @@ void refresh(int* screen_length, int *screen, int *score)
         if (prev_index >= 0) {
             screen[3*prev_index + 2] = id;
             idvals[prev_index] = id;
-            *index = *index - 3;
+            *screen_length = *screen_length - 3;
             continue;
         }
         xvals[i] = x;
