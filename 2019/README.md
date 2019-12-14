@@ -87,3 +87,9 @@ I'm using these puzzles to learn C, since I almost always only use Python.
 - Dynamic array allocation with malloc and realloc
 - Null pointers
 - Building Doxygen docs
+
+### [Day 14](14) - Ore to fuel
+
+- A lot more confidence with structs and pointers
+- A lot less confidence with recursion... took me a long time with a lot
+  of starting over to get to a solution that worked well.
