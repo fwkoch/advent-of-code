@@ -6,4 +6,5 @@ int array_sum(int length, int *input);
 int fft_digit(int length, int index, int *input);
 void fft(int length, int *input, int *output);
 void repeat_fft(int repeats, int length, int *input, int *output);
-void print_digits(int amount, int *input);
+int get_digits(int start, int amount, int *input);
+void print_digits(int start, int amount, int *input);

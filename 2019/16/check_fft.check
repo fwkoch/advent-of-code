@@ -142,3 +142,8 @@
     fail_unless(output[5] == 4);
     fail_unless(output[6] == 9);
     fail_unless(output[7] == 8);
+
+#test get_digits_test
+    int a[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    fail_unless(get_digits(0, 2, a) == 12);
+    fail_unless(get_digits(3, 3, a) == 456);

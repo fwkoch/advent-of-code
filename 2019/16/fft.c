@@ -43,22 +43,6 @@ int array_sum(int length, int *input)
     return sum;
 }
 
-int array_operation(int length, int index, int *input)
-{
-    int j, sum = 0;
-    for (int i = 0; i < length; i++) {
-        j = (i+1)/(index+1);
-        if (j%4 == 0 || j%4 == 2) {
-            continue;
-        } else if (j%4 == 1) {
-            sum += input[i];
-        } else {
-            sum -= input[i];
-        }
-    }
-    return sum;
-}
-
 int get_ones_place(int value)
 {
     if (value < 0) {
@@ -69,12 +53,20 @@ int get_ones_place(int value)
 
 int fft_digit(int length, int index, int *input)
 {
-    int phase[length];
-    int temp[length];
-    generate_phase(length, index, phase);
-    array_multiply(length, input, phase, temp);
-    int sum = array_sum(length, temp);
-    return get_ones_place(sum);
+    int j, sum = 0;
+    for (int i = 0; i < length; i++) {
+        j = (i+1)/(index+1);
+        if (j%4 == 0 || j%4 == 2) {
+            continue;
+        } else if (j%4 == 1) {
+            sum += input[i%length];
+        } else {
+            sum -= input[i%length];
+        }
+    }if (sum < 0) {
+        sum = -sum;
+    }
+    return sum - (sum / 10) * 10;
 
 }
 
@@ -90,15 +82,30 @@ void repeat_fft(int repeats, int length, int *input, int *output)
     int temp[length];
     memcpy(temp, input, length * sizeof(int));
     for (int i = 0; i < repeats; i++) {
-        fft(length, temp, output);
-        memcpy(temp, output, length * sizeof(int));
+        if (i%2 == 0) {
+            fft(length, temp, output);
+        } else {
+            fft(length, output, temp);
+        }
+    }
+    if (repeats%2 == 0) {
+        memcpy(output, temp, length * sizeof(int));
     }
 }
 
-void print_digits(int amount, int *input)
+int get_digits(int start, int amount, int *input)
+{
+    int digits = 0;
+    for (int i = 0; i < amount; i++) {
+        digits = digits * 10 + input[i+start];
+    }
+    return digits;
+}
+
+void print_digits(int start, int amount, int *input)
 {
     for (int i = 0; i < amount; i++) {
-        printf("%d", input[i]);
+        printf("%d", input[i+start]);
     }
     printf("\n");
 }
