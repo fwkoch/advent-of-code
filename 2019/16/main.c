@@ -12,13 +12,3 @@ int main(int argc, char* argv[])
     printf("Ok\n");
     return 0;
 }
-
-// int signal_from_line(char *line, int *signal)
-// {
-//     int i = 0;
-//     while (line[i] != '\n') {
-//         signal[i] = line[i] - '0';
-//         i++;
-//     }
-//     return i;
-// }
