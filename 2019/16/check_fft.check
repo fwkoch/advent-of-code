@@ -7,3 +7,138 @@
     fail_unless(signal[0] == 1);
     fail_unless(signal[1] == 2);
     fail_unless(signal[2] == 3);
+
+#test generate_phase_index_zero_test
+    int phase[10];
+    generate_phase(10, 0, phase);
+    fail_unless(phase[0] == 1);
+    fail_unless(phase[1] == 0);
+    fail_unless(phase[2] == -1);
+    fail_unless(phase[3] == 0);
+    fail_unless(phase[4] == 1);
+    fail_unless(phase[5] == 0);
+    fail_unless(phase[6] == -1);
+    fail_unless(phase[7] == 0);
+    fail_unless(phase[8] == 1);
+    fail_unless(phase[9] == 0);
+
+#test generate_phase_index_one_test
+    int phase[10];
+    generate_phase(10, 1, phase);
+    fail_unless(phase[0] == 0);
+    fail_unless(phase[1] == 1);
+    fail_unless(phase[2] == 1);
+    fail_unless(phase[3] == 0);
+    fail_unless(phase[4] == 0);
+    fail_unless(phase[5] == -1);
+    fail_unless(phase[6] == -1);
+    fail_unless(phase[7] == 0);
+    fail_unless(phase[8] == 0);
+    fail_unless(phase[9] == 1);
+
+#test generate_phase_index_two_test
+    int phase[10];
+    generate_phase(10, 2, phase);
+    fail_unless(phase[0] == 0);
+    fail_unless(phase[1] == 0);
+    fail_unless(phase[2] == 1);
+    fail_unless(phase[3] == 1);
+    fail_unless(phase[4] == 1);
+    fail_unless(phase[5] == 0);
+    fail_unless(phase[6] == 0);
+    fail_unless(phase[7] == 0);
+    fail_unless(phase[8] == -1);
+    fail_unless(phase[9] == -1);
+
+#test generate_phase_index_three_test
+    int phase[10];
+    generate_phase(10, 3, phase);
+    fail_unless(phase[0] == 0);
+    fail_unless(phase[1] == 0);
+    fail_unless(phase[2] == 0);
+    fail_unless(phase[3] == 1);
+    fail_unless(phase[4] == 1);
+    fail_unless(phase[5] == 1);
+    fail_unless(phase[6] == 1);
+    fail_unless(phase[7] == 0);
+    fail_unless(phase[8] == 0);
+    fail_unless(phase[9] == 0);
+
+#test generate_phase_index_four_test
+    int phase[10];
+    generate_phase(10, 4, phase);
+    fail_unless(phase[0] == 0);
+    fail_unless(phase[1] == 0);
+    fail_unless(phase[2] == 0);
+    fail_unless(phase[3] == 0);
+    fail_unless(phase[4] == 1);
+    fail_unless(phase[5] == 1);
+    fail_unless(phase[6] == 1);
+    fail_unless(phase[7] == 1);
+    fail_unless(phase[8] == 1);
+    fail_unless(phase[9] == 0);
+
+#test generate_phase_index_hundred_test
+    int phase[10];
+    generate_phase(10, 100, phase);
+    for (int i = 0; i < 10; i++){
+        fail_unless(phase[i] == 0);
+    }
+
+#test array_multiply_test
+    int a[3] = {1, 2, 3};
+    int b[3] = {-4, 5, 0};
+    int output[3];
+    array_multiply(3, a, b, output);
+    fail_unless(output[0] == -4);
+    fail_unless(output[1] == 10);
+    fail_unless(output[2] == 0);
+
+#test array_sum_test
+    int a[3] = {1, 2, 3};
+    fail_unless(array_sum(3, a) == 6);
+
+#test get_ones_place_test
+    fail_unless(get_ones_place(0) == 0);
+    fail_unless(get_ones_place(1) == 1);
+    fail_unless(get_ones_place(-4) == 4);
+    fail_unless(get_ones_place(15) == 5);
+    fail_unless(get_ones_place(-1000003) == 3);
+
+#test fft_digit_test
+    int a[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    fail_unless(fft_digit(8, 0, a) == 4);
+    fail_unless(fft_digit(8, 1, a) == 8);
+    fail_unless(fft_digit(8, 2, a) == 2);
+    fail_unless(fft_digit(8, 3, a) == 2);
+    fail_unless(fft_digit(8, 4, a) == 6);
+    fail_unless(fft_digit(8, 5, a) == 1);
+    fail_unless(fft_digit(8, 6, a) == 5);
+    fail_unless(fft_digit(8, 7, a) == 8);
+
+
+#test fft_test
+    int a[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    int output[8];
+    fft(8, a, output);
+    fail_unless(output[0] == 4);
+    fail_unless(output[1] == 8);
+    fail_unless(output[2] == 2);
+    fail_unless(output[3] == 2);
+    fail_unless(output[4] == 6);
+    fail_unless(output[5] == 1);
+    fail_unless(output[6] == 5);
+    fail_unless(output[7] == 8);
+
+#test repeat_fft_test
+    int a[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    int output[8];
+    repeat_fft(4, 8, a, output);
+    fail_unless(output[0] == 0);
+    fail_unless(output[1] == 1);
+    fail_unless(output[2] == 0);
+    fail_unless(output[3] == 2);
+    fail_unless(output[4] == 9);
+    fail_unless(output[5] == 4);
+    fail_unless(output[6] == 9);
+    fail_unless(output[7] == 8);
