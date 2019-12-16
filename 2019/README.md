@@ -93,3 +93,10 @@ I'm using these puzzles to learn C, since I almost always only use Python.
 - A lot more confidence with structs and pointers
 - A lot less confidence with recursion... took me a long time with a lot
   of starting over to get to a solution that worked well.
+
+### [Day 15](15) - Re-oxygenate
+
+- Tiny C things like random numbers and sleeps, but feeling quite
+  comfortable
+- Mostly recursion - spent longer thinking on this one, so I was quicker
+  to the solution once I started coding.
