@@ -1,9 +1,9 @@
 #include "fft.h"
 
 #test signal_from_line_test
-    char* line = "123";
+    char* line = "123\n";
     int signal[3];
-    signal_from_line(line, signal);
+    fail_unless(signal_from_line(line, signal) == 3);
     fail_unless(signal[0] == 1);
     fail_unless(signal[1] == 2);
     fail_unless(signal[2] == 3);
