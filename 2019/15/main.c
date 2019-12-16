@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "main.h"
 
 int main(int argc, char* argv[])
@@ -12,9 +13,7 @@ int main(int argc, char* argv[])
     long* pointer = &intcode[0];
     int relative_base = 0;
 
-    int capacity = 4;
-    int* screen = malloc(capacity * sizeof(int));
-
+    int screen[8192];
     int x = 0;
     int y = 0;
     screen[0] = 0;
@@ -27,53 +26,125 @@ int main(int argc, char* argv[])
     char autoplay;
     scanf(" %c", &autoplay);
 
-    while (1) {
-        refresh(index, screen, x, y);
-        if (autoplay == 'n') {
+    if (autoplay == 'n') {
+        while (1) {
+            refresh(index, screen, x, y);
             scanf(" %c", &dir_input);
             dir = dir_input - '0';
-        } else {
-            dir = rand() % 4 + 1;
+            if (dir < 1 || dir > 4) {
+                printf("Bad input: %c\n", dir_input);
+                continue;
+            }
+            if (dir == 1) {
+                xnext = x;
+                ynext = y+1;
+            } else if (dir == 2) {
+                xnext = x;
+                ynext = y-1;
+            } else if (dir == 3) {
+                xnext = x-1;
+                ynext = y;
+            } else {
+                xnext = x+1;
+                ynext = y;
+            }
+            status = process_intcode(intcode, &pointer, &relative_base, &dir);
+            if (get_index(xnext, ynext, index, screen) == -1) {
+                screen[index*3] = xnext;
+                screen[index*3+1] = ynext;
+                screen[index*3+2] = status;
+                index++;
+            }
+            if (status != 0) {
+                x = xnext;
+                y = ynext;
+            }
         }
-        if (dir < 1 || dir > 4) {
-            printf("Bad input: %c\n", dir_input);
+    } else {
+        explore(&index, screen, x, y, 0, intcode, &pointer, &relative_base);
+        int oxygen_system_index = -1;
+        for (int i = 0; i < index; i++) {
+            if (screen[i*3+2] == 2) {
+                oxygen_system_index = i;
+            }
+        }
+        if (oxygen_system_index == -1) {
+            printf("No oxygen system. :(\n");
+            return 1;
+        }
+        int time = oxygenate(index, screen, screen[oxygen_system_index*3], screen[oxygen_system_index*3+1]);
+        printf("Total time: %d minutes\n", time-1);
+    }
+    return 0;
+}
+
+void explore(int* index, int *screen, int x, int y, int home, long *intcode, long **pointer, int *relative_base)
+{
+    usleep(10000);
+    refresh(*index, screen, x, y);
+    printf("%d\n", *index);
+    int xnext, ynext, back, status;
+    for (int i = 1; i < 5; i++) {
+        if (i == home) {
             continue;
         }
-        if (dir == 1) {
+        if (i == 1) {
             xnext = x;
             ynext = y+1;
-        } else if (dir == 2) {
-            xnext = x;
-            ynext = y-1;
-        } else if (dir == 3) {
+            back = 2;
+        } else if (i == 3) {
             xnext = x-1;
             ynext = y;
+            back = 4;
+        } else if (i == 2) {
+            xnext = x;
+            ynext = y-1;
+            back = 1;
         } else {
             xnext = x+1;
             ynext = y;
+            back = 3;
         }
-        status = process_intcode(intcode, &pointer, &relative_base, &dir);
-        if (get_index(xnext, ynext, index, screen) == -1) {
-            if (index*3+2 >= capacity) {
-                printf("Index: %d  ", index*3+2);
-                capacity = capacity * 2;
-                printf("reallocating: %d\n", capacity);
-                screen = realloc(screen, capacity * sizeof(int));
-            }
-            screen[index*3] = xnext;
-            screen[index*3+1] = ynext;
-            screen[index*3+2] = status;
-            index++;
+        status = process_intcode(intcode, pointer, relative_base, &i);
+        if (get_index(xnext, ynext, *index, screen) == -1) {
+            screen[*index*3] = xnext;
+            screen[*index*3+1] = ynext;
+            screen[*index*3+2] = status;
+            *index = *index + 1;
         }
-        if (status != 0) {
-            x = xnext;
-            y = ynext;
-        }
-        if (status == 2) {
-            autoplay = 'n';
+        if (status > 0) {
+            explore(index, screen, xnext, ynext, back, intcode, pointer, relative_base);
+            status = process_intcode(intcode, pointer, relative_base, &back);
         }
     }
-    return 0;
+}
+
+int oxygenate(int index, int *screen, int x, int y)
+{
+    int oxy_index = get_index(x, y, index, screen);
+    if (oxy_index == -1) {
+        return 0;
+    }
+    if (screen[oxy_index*3+2] <= 0) {
+        return 0;
+    }
+    usleep(10000);
+    refresh(index, screen, 1000, 1000);
+    screen[get_index(x, y, index, screen)*3+2] = -1;
+    int max_time = oxygenate(index, screen, x, y+1);
+    int time = oxygenate(index, screen, x-1, y);
+    if (time > max_time) {
+        max_time = time;
+    }
+    time = oxygenate(index, screen, x, y-1);
+    if (time > max_time) {
+        max_time = time;
+    }
+    time = oxygenate(index, screen, x+1, y);
+    if (time > max_time) {
+        max_time = time;
+    }
+    return max_time+1;
 }
 
 void print_array(int length, int *array)
@@ -119,6 +190,8 @@ void refresh(int length, int *screen, int xdroid, int ydroid)
                 printf(" ");
             } else if (status == 2) {
                 printf("X");
+            } else if (status == -1) {
+                printf("O");
             } else{
                 printf("+");
             }
@@ -141,7 +214,7 @@ int get_status(int x, int y, int length, int *screen)
 {
     int index = get_index(x, y, length, screen);
     if (index == -1) {
-        return -1;
+        return -2;
     }
     return screen[index*3+2];
 }

@@ -28,3 +28,5 @@ int process_intcode(long *intcode, long **pointer, int *rb_pointer, int *input);
 void refresh(int length, int *screen, int xdroid, int ydroid);
 int get_index(int x, int y, int length, int *screen);
 int get_status(int x, int y, int length, int *screen);
+void explore(int *index, int *screen, int x, int y, int home, long *intcode, long **pointer, int *relative_base);
+int oxygenate(int index, int *screen, int x, int y);
