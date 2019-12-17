@@ -100,3 +100,16 @@ I'm using these puzzles to learn C, since I almost always only use Python.
   comfortable
 - Mostly recursion - spent longer thinking on this one, so I was quicker
   to the solution once I started coding.
+
+### [Day 16](16) - FFT
+
+- Dipped my toes into library configuration management with Autotools.
+  This is still on a commit somewhere, but was much too heavy-handed as
+  a learning experience, so I stepped back a bit.
+- Implemented a small unit test suuite with check
+- Slightly more complex makefile
+- Algorithm for large signal incomplete.
+
+### [Day 17](17) - ASCII scaffolding
+
+
