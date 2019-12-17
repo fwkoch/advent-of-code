@@ -13,15 +13,19 @@ int main(int argc, char* argv[])
     long* pointer = &intcode[0];
     int relative_base = 0;
 
-    int output;
+    int output, prev_output;
     int length = 0;
     int xvals[8192];
     int yvals[8192];
     int status[8192];
     int x = 0;
     int y = 0;
-    output = process_intcode(intcode, &pointer, &relative_base, NULL);
+    output = process_intcode(intcode, &pointer, &relative_base);
     while (output != -1) {
+        if (prev_output == 10 && output == 10) {
+            printf("Breaking");
+            break;
+        }
         if ((char)output == '\n') {
             x = 0;
             y++;
@@ -31,12 +35,29 @@ int main(int argc, char* argv[])
             status[length] = output;
             x++;
             length++;
+            printf(" ");
         }
         printf("%c", (char)output);
-        output = process_intcode(intcode, &pointer, &relative_base, NULL);
+        prev_output = output;
+        output = process_intcode(intcode, &pointer, &relative_base);
     }
-    int alignment_parameter = get_alignment_parameter(length, xvals, yvals, status);
-    printf("Alignment parameter: %d\n", alignment_parameter);
+    while (output != -1) {
+        // Main:
+        // A,B,B,C,B,C,B,C,A,A
+        // Function A:
+        // L,6,R,8,L,4,R,8,L,12
+        // Function B:
+        // L,12,R,10,L,4
+        // Function C:
+        // L,12,L,6,L,4,L,4
+        if (output < 256) {
+            printf("%c", (char)output);
+        } else {
+            printf("Space dust: %d\n", output);
+        }
+        output = process_intcode(intcode, &pointer, &relative_base);
+
+    }
     return 0;
 }
 
@@ -119,9 +140,9 @@ int intcode_from_csv_line(char* file_name, long *intcode)
     return ct;
 }
 
-int process_intcode(long *intcode, long **pointer, int *rb_pointer, int *input)
+int process_intcode(long *intcode, long **pointer, int *rb_pointer)
 {
-    int opcode, val;
+    int opcode, val, input;
     int param_mode_one, param_mode_two, param_mode_three;
     long param_one, param_two;
     int output = -1;
@@ -164,14 +185,15 @@ int process_intcode(long *intcode, long **pointer, int *rb_pointer, int *input)
             }
             *pointer += 4;
         } else if (opcode == 3) {
-            if (input == NULL) {
-                printf("Input required\n");
-                return -1;
-            }
+            // if (input == NULL) {
+            //     printf("Input required\n");
+            //     return -1;
+            // }
+            input = (int)getchar();
             if (param_mode_one == 0) {
-                intcode[*(*pointer+1)] = *input;
+                intcode[*(*pointer+1)] = input;
             } else {
-                intcode[*rb_pointer + *(*pointer+1)] = *input;
+                intcode[*rb_pointer + *(*pointer+1)] = input;
             }
             *pointer += 2;
         } else if (opcode == 4) {
@@ -218,7 +240,7 @@ int process_intcode(long *intcode, long **pointer, int *rb_pointer, int *input)
             *rb_pointer += param_one;
             *pointer += 2;
         } else {
-            printf("something went wrong with intcode...\n");
+            printf("something went wrong with intcode...%d\n", opcode);
             return -1;
         }
     }

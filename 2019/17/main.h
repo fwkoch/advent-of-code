@@ -24,7 +24,7 @@ void print_array(int length, int *array);
  *  \return Output value of the intcode execution or -1 if input is
  *          required or execution reaches the stopping condition.
  */
-int process_intcode(long *intcode, long **pointer, int *rb_pointer, int *input);
+int process_intcode(long *intcode, long **pointer, int *rb_pointer);
 int get_alignment_parameter(int length, int *xvals, int *yvals, int *status);
 int get_index(int x, int y, int length, int *xvals, int *yvals);
 int get_status(int x, int y, int length, int *xvals, int *yvals, int *status);
