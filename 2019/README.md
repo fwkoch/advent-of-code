@@ -112,4 +112,5 @@ I'm using these puzzles to learn C, since I almost always only use Python.
 
 ### [Day 17](17) - ASCII scaffolding
 
+- A little bit of ASCII, nothing profound
 
