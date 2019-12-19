@@ -12,23 +12,29 @@ int main(int argc, char* argv[])
     int relative_base;
 
     int output;
-    int affected_points = 0;
-    for (int x = 0; x < 50; x++) {
-        for (int y = 0; y < 50; y++) {
+    int x = 0;
+    int y = 99;
+    while (1) {
+        intcode_from_csv_line(file_name, intcode);
+        relative_base = 0;
+        pointer = &intcode[0];
+        output = process_intcode(intcode, &pointer, &relative_base, x, y);
+        if (output == 1) {
             intcode_from_csv_line(file_name, intcode);
             relative_base = 0;
             pointer = &intcode[0];
-            output = process_intcode(intcode, &pointer, &relative_base, x, y);
+            output = process_intcode(intcode, &pointer, &relative_base, x+99, y-99);
             if (output == 1) {
-                printf("#");
-                affected_points++;
+                break;
             } else {
-                printf(".");
+                y++;
             }
-            }
-        printf("\n");
+        } else {
+            x++;
+        }
     }
-    printf("Affected points: %d\n", affected_points);
+    printf("Top left: (%d, %d)\n", x, y-99);
+    printf("Value = %d\n", 10000*x+y-99);
     return 0;
 }
 int get_index(int x, int y, int length, int *xvals, int *yvals)
