@@ -1,2 +1,4 @@
 main
 docs/
+*.js
+node_modules
