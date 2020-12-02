@@ -1,4 +1,7 @@
 main
 docs/
+
 *.js
+!.eslintrc.js
+
 node_modules
