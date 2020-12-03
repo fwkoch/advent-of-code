@@ -17,4 +17,13 @@ function countTrees(input: string[], slope: [number, number], start: [number, nu
   return trees;
 }
 
+function multiplySlopes(input: string[], slopes: [number, number][]) {
+  let product: number = 1;
+  slopes.forEach((slope: [number, number]): void => {
+    product *= countTrees(input, slope);
+  });
+  return product;
+}
+
 console.log(countTrees(readInput('input.txt'), [1, 3]));
+console.log(multiplySlopes(readInput('input.txt'), [[1, 1], [1, 3], [1, 5], [1, 7], [2, 1]]));
