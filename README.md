@@ -5,3 +5,7 @@
 ## [2019](2019)
 
 Let's learn some C!
+
+## [2020](2020)
+
+Typescript
