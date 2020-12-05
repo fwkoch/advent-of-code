@@ -41,4 +41,23 @@ function getMaxSeatID(partitions: string[]): number {
   return seatID;
 }
 
+function getSortedSeatIDs(partitions: string[]): number[] {
+  let seatIDs: number[] = [];
+  partitions.forEach((partition: string): void => {
+    seatIDs.push(getSeatID(partition));
+  })
+  return seatIDs.sort((a: number, b: number): number => a - b);
+}
+
+function findGapOfOne(sortedSeats: number[]): number {
+  let i: number;
+  for (i = 0; i < sortedSeats.length - 1; i += 1) {
+    if (sortedSeats[i+1] - sortedSeats[i] === 2) {
+      return sortedSeats[i] + 1;
+    }
+  }
+  throw new Error('seat not found');
+}
+
 console.log(getMaxSeatID(getSeats('input.txt')))
+console.log(findGapOfOne(getSortedSeatIDs(getSeats('input.txt'))))
