@@ -8,4 +8,4 @@ Let's learn some C!
 
 ## [2020](2020)
 
-Typescript
+Let's learn some Typescript!
