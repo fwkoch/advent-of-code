@@ -3,7 +3,7 @@ import * as fs from 'fs';
 class Bag {
   parents: Bag[];
 
-  children: Bag[];
+  children: [Bag, number][];
 
   name: string;
 
@@ -23,14 +23,25 @@ class Bag {
     });
     return parentNames;
   }
+
+  countAllChildren(): number {
+    let count: number = 0;
+    this.children.forEach((child: [Bag, number]): void => {
+      count += child[1] * (1 + child[0].countAllChildren());
+    });
+    return count;
+  }
 }
 
-function childNames(rule: string): string[] {
+function childNamesAndCount(rule: string): [string, number][] {
   const ruleHalf: string = rule.split(' bags contain ')[1];
   if (ruleHalf.startsWith('no ')) {
     return [];
   }
-  return ruleHalf.split(', ').map((child: string): string => child.substring(child.indexOf(' ') + 1, child.lastIndexOf(' ')));
+  return ruleHalf.split(', ').map((child: string): [string, number] => [
+    child.substring(child.indexOf(' ') + 1, child.lastIndexOf(' ')),
+    +child.substring(0, child.indexOf(' ')),
+  ]);
 }
 
 function getBags(filename: string): { [name: string]: Bag } {
@@ -41,15 +52,18 @@ function getBags(filename: string): { [name: string]: Bag } {
     if (bags[parent] === undefined) {
       bags[parent] = new Bag(parent);
     }
-    childNames(rule).forEach((child: string): void => {
-      if (bags[child] === undefined) {
-        bags[child] = new Bag(child);
+    childNamesAndCount(rule).forEach((child: [string, number]): void => {
+      if (bags[child[0]] === undefined) {
+        bags[child[0]] = new Bag(child[0]);
       }
-      bags[child].parents.push(bags[parent]);
-      bags[parent].children.push(bags[child]);
+      bags[child[0]].parents.push(bags[parent]);
+      bags[parent].children.push([bags[child[0]], child[1]]);
     });
   });
   return bags;
 }
 
-console.log(getBags('input.txt')['shiny gold'].getAllParentNames().size);
+const shinyGold = getBags('input.txt')['shiny gold'];
+
+console.log(shinyGold.getAllParentNames().size);
+console.log(shinyGold.countAllChildren());
