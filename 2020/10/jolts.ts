@@ -84,10 +84,20 @@ function totalCombinations(n: number): number {
     .reduce((a, b) => a + b, 0);
 }
 
+// this makes the previous 46 lines of code obsolete. shucks
+const totalCombinationsLookup: {[count: string]: number} = {
+  0: 1,
+  1: 1,
+  2: 2, // 11, 2
+  3: 4, // 111, 21, 12, 3
+  4: 7, // 1111, 211, 121, 112, 22, 31, 13
+};
+
 function getBigProduct(groups: {[count: string]: number}): number {
   let product: number = 1;
   Object.keys(groups).forEach((key: string): void => {
-    product *= totalCombinations(+key) ** groups[key];
+    // product *= totalCombinations(+key) ** groups[key];
+    product *= totalCombinationsLookup[key] ** groups[key];
   });
   return product;
 }
