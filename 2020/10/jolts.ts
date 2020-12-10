@@ -37,14 +37,6 @@ function groupsOfOnes(differences: number[]): {[count: string]: number} {
   return counts;
 }
 
-function setifyArrayOfArrays(array: [number, number, number][]): [number, number, number][] {
-  const arraySet: Set<string> = new Set(
-    array.map((val: [number, number, number]): string => `${val[0]}${val[1]}${val[2]}`),
-  );
-  return Array.from(arraySet)
-    .map((val: string): [number, number, number] => [+val[0], +val[1], +val[2]]);
-}
-
 function uniqueArrangements(n: number): [number, number, number][] {
   // Returns list of [n1, n2, n3] arrangements, where n1 is number of 1s, etc.
   if (n < 0) {
@@ -62,7 +54,7 @@ function uniqueArrangements(n: number): [number, number, number][] {
     .map((val: [number, number, number]): [number, number, number] => [val[0], val[1] + 1, val[2]]);
   const threePrefix: [number, number, number][] = uniqueArrangements(n - 3)
     .map((val: [number, number, number]): [number, number, number] => [val[0] + 1, val[1], val[2]]);
-  return setifyArrayOfArrays(onePrefix.concat(twoPrefix).concat(threePrefix));
+  return onePrefix.concat(twoPrefix).concat(threePrefix);
 }
 
 function factorial(n: number): number {
@@ -78,8 +70,16 @@ function combinations(val: [number, number, number]): number {
   return numerator / denominator;
 }
 
+function setifyArrayOfArrays(array: [number, number, number][]): [number, number, number][] {
+  const arraySet: Set<string> = new Set(
+    array.map((val: [number, number, number]): string => `${val[0]}${val[1]}${val[2]}`),
+  );
+  return Array.from(arraySet)
+    .map((val: string): [number, number, number] => [+val[0], +val[1], +val[2]]);
+}
+
 function totalCombinations(n: number): number {
-  return uniqueArrangements(n)
+  return setifyArrayOfArrays(uniqueArrangements(n))
     .map((val: [number, number, number]): number => combinations(val))
     .reduce((a, b) => a + b, 0);
 }
