@@ -9,6 +9,7 @@ function nextSeatState(
   col: number,
   row: number,
   seats: string[],
+  tolerance: number,
   neighborCallback: (c: number, r: number, i: number, j: number, s: string[]) => string,
 ): string {
   const seat: string = seats[row][col];
@@ -26,7 +27,7 @@ function nextSeatState(
           if (seat === 'L') {
             return 'L';
           }
-          if (occupied >= 4) {
+          if (occupied >= tolerance) {
             return 'L';
           }
         }
@@ -49,13 +50,14 @@ function adjacent(col: number, row: number, i: number, j: number, seats: string[
 
 function nextRound(
   seats: string[],
+  tolerance: number,
   neighborCallback: (c: number, r: number, i: number, j: number, s: string[]) => string,
 ): string[] {
   const nextSeats: string[] = [...seats];
   for (let row: number = 0; row < seats.length; row += 1) {
     nextSeats[row] = '';
     for (let col: number = 0; col < seats[0].length; col += 1) {
-      nextSeats[row] += nextSeatState(col, row, seats, neighborCallback);
+      nextSeats[row] += nextSeatState(col, row, seats, tolerance, neighborCallback);
     }
   }
   return nextSeats;
@@ -67,13 +69,14 @@ function equal(a: string[], b: string[]): boolean {
 
 function simulate(
   seats: string[],
+  tolerance: number,
   neighborCallback: (c: number, r: number, i: number, j: number, s: string[]) => string,
 ): string[] {
   let theseSeats: string[] = seats;
-  let nextSeats: string[] = nextRound(theseSeats, neighborCallback);
+  let nextSeats: string[] = nextRound(theseSeats, tolerance, neighborCallback);
   while (!equal(theseSeats, nextSeats)) {
     theseSeats = nextSeats;
-    nextSeats = nextRound(theseSeats, neighborCallback);
+    nextSeats = nextRound(theseSeats, tolerance, neighborCallback);
   }
   return nextSeats;
 }
@@ -90,4 +93,23 @@ function countOccupied(seats: string[]): number {
   return occupied;
 }
 
-console.log(countOccupied(simulate(getSeats('input.txt'), adjacent)));
+function sightLine(col: number, row: number, i: number, j: number, seats: string[]): string {
+  let ni: number = i;
+  let nj: number = j;
+  let neighbor: string;
+  while (seats[row + ni] !== undefined) {
+    neighbor = seats[row + ni][col + nj];
+    if (neighbor === undefined) {
+      return '.';
+    }
+    if (neighbor === '#' || neighbor === 'L') {
+      return neighbor;
+    }
+    ni += i;
+    nj += j;
+  }
+  return '.';
+}
+
+console.log(countOccupied(simulate(getSeats('input.txt'), 4, adjacent)));
+console.log(countOccupied(simulate(getSeats('input.txt'), 5, sightLine)));
