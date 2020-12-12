@@ -15,14 +15,17 @@ const directions: {[dir: number]: string} = {
 class Ship {
   location: [number, number];
 
+  waypoint: [number, number];
+
   facing: number;
 
   constructor() {
     this.location = [0, 0];
+    this.waypoint = [10, 1];
     this.facing = 90;
   }
 
-  move(action: string, value: number): void {
+  moveShip(action: string, value: number): void {
     if (action === 'R') {
       this.facing = (this.facing + value) % 360;
     } else if (action === 'L') {
@@ -44,17 +47,55 @@ class Ship {
     }
   }
 
-  consumeInstructions(instructions: string[]): void {
+  moveWaypoint(action: string, value: number): void {
+    if (action === 'F') {
+      this.location = [
+        this.location[0] + value * this.waypoint[0],
+        this.location[1] + value * this.waypoint[1],
+      ];
+    } else if (action === 'R') {
+      for (let i = 0; i < value / 90; i += 1) {
+        this.waypoint = [this.waypoint[1], -this.waypoint[0]];
+      }
+    } else if (action === 'L') {
+      for (let i = 0; i < value / 90; i += 1) {
+        this.waypoint = [-this.waypoint[1], this.waypoint[0]];
+      }
+    } else if (action === 'N') {
+      this.waypoint[1] += value;
+    } else if (action === 'S') {
+      this.waypoint[1] -= value;
+    } else if (action === 'E') {
+      this.waypoint[0] += value;
+    } else if (action === 'W') {
+      this.waypoint[0] -= value;
+    }
+  }
+
+  consumeShipInstructions(instructions: string[]): void {
     instructions.forEach((instruction: string): void => {
-      this.move(instruction[0], +instruction.slice(1, instruction.length));
+      this.moveShip(instruction[0], +instruction.slice(1, instruction.length));
+    });
+  }
+
+  consumeWaypointInstructions(instructions: string[]): void {
+    instructions.forEach((instruction: string): void => {
+      this.moveWaypoint(instruction[0], +instruction.slice(1, instruction.length));
     });
   }
 }
 
-function manhattanDistance(filename: string): number {
+function manhattanDistanceShip(filename: string): number {
   const ship: Ship = new Ship();
-  ship.consumeInstructions(getInstructions(filename));
+  ship.consumeShipInstructions(getInstructions(filename));
   return Math.abs(ship.location[0]) + Math.abs(ship.location[1]);
 }
 
-console.log(manhattanDistance('input.txt'));
+function manhattanDistanceWaypoint(filename: string): number {
+  const ship: Ship = new Ship();
+  ship.consumeWaypointInstructions(getInstructions(filename));
+  return Math.abs(ship.location[0]) + Math.abs(ship.location[1]);
+}
+
+console.log(manhattanDistanceShip('input.txt'));
+console.log(manhattanDistanceWaypoint('input.txt'));
