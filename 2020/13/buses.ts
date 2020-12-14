@@ -12,7 +12,7 @@ function getBuses(filename: string): [number, number[]] {
 function getRelativeDepartures(filename: string): number[] {
   const input: string = fs.readFileSync(filename, 'utf8');
   const departures: number[] = input.split('\n')[1].split(',')
-    .map((bus: string, i: number): number => ((bus === 'x') ? -1 : -i))
+    .map((bus: string, i: number): number => ((bus === 'x') ? -1 : i))
     .filter((bus: number): boolean => bus !== 1);
   return departures;
 }
