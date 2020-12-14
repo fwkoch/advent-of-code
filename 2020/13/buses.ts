@@ -101,4 +101,4 @@ function lessBrutish(buses: number[], departures: number[]): number {
 
 const input: [number, number[]] = getBuses('input.txt');
 console.log(departureTime(input[0], input[1]));
-console.log(lessBrutish(input[1], getRelativeDepartures('input.txt')))
+console.log(lessBrutish(input[1], getRelativeDepartures('input.txt')));
