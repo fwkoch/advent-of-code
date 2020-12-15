@@ -19,18 +19,21 @@ function playGame(history: {[num: string]: number[]}, previous: string, start: n
   let turn: number = start;
   let current: number = -1;
   let gamePrev: number[];
-  while (turn < 2020) {
+  while (turn < 30000000) {
+    if (turn % 10000 === 0) {
+      console.log(turn);
+    }
     gamePrev = game[prev];
     if (gamePrev.length === 1) {
       current = 0;
     } else {
-      current = gamePrev[gamePrev.length - 1] - gamePrev[gamePrev.length - 2];
+      current = gamePrev[1] - gamePrev[0];
     }
     prev = current.toString();
     if (history[prev] === undefined) {
       game[prev] = [turn];
     } else {
-      game[prev].push(turn);
+      game[prev] = [game[prev][game[prev].length - 1], turn];
     }
     turn += 1;
   }
