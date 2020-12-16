@@ -51,15 +51,98 @@ function getInvalidValues(rules: {[num: string]: number[]}, ticket: number[]): n
   return invalidValues;
 }
 
-function errorRate(filename: string): number {
-  const [rules, , nearbyTickets]: [
-    {[num: string]: number[]}, number[], number[][]
-  ] = getInputs(filename);
+function errorRate(rules: {[num: string]: number[]}, tickets: number[][]): number {
   let invalidValues: number[] = [];
-  for (let i: number = 0; i < nearbyTickets.length; i += 1) {
-    invalidValues = invalidValues.concat(getInvalidValues(rules, nearbyTickets[i]));
+  for (let i: number = 0; i < tickets.length; i += 1) {
+    invalidValues = invalidValues.concat(getInvalidValues(rules, tickets[i]));
   }
   return invalidValues.reduce((a: number, b: number): number => a + b, 0);
 }
 
-console.log(errorRate('input.txt'));
+function getValidTickets(rules: {[num: string]: number[]}, tickets: number[][]): number[][] {
+  const validTickets: number[][] = [];
+  for (let i: number = 0; i < tickets.length; i += 1) {
+    if (getInvalidValues(rules, tickets[i]).length === 0) {
+      validTickets.push(tickets[i]);
+    }
+  }
+  return validTickets;
+}
+
+function getAllIndicesForRule(
+  rules: {[num: string]: number[]},
+  tickets: number[][],
+): {[num: string]: number[]} {
+  const validIndicesForRule: {[rule: string]: number[]} = {};
+  const ruleKeys: string[] = Object.keys(rules);
+  let j: number;
+  let valid: boolean;
+  for (let i: number = 0; i < ruleKeys.length; i += 1) {
+    validIndicesForRule[ruleKeys[i]] = [];
+    for (let field: number = 0; field < tickets[0].length; field += 1) {
+      j = 0;
+      valid = true;
+      while (j < tickets.length && valid) {
+        valid = isValueValid(tickets[j][field], rules[ruleKeys[i]]);
+        j += 1;
+      }
+      if (valid) {
+        validIndicesForRule[ruleKeys[i]].push(field);
+      }
+    }
+  }
+  return validIndicesForRule;
+}
+
+function reduceRuleIndices(ruleIndices: {[num: string]: number[]}): {[num: string]: number[]} {
+  const ruleIndicesCopy: {[num: string]: number[]} = { ...ruleIndices };
+  const ruleKeys: string[] = Object.keys(ruleIndices);
+  let allIndicesUnique: boolean = false;
+  while (!allIndicesUnique) {
+    allIndicesUnique = true;
+    for (let i: number = 0; i < ruleKeys.length; i += 1) {
+      if (ruleIndicesCopy[ruleKeys[i]].length === 1) {
+        for (let j: number = 0; j < ruleKeys.length; j += 1) {
+          if (j !== i) {
+            ruleIndicesCopy[ruleKeys[j]] = ruleIndicesCopy[ruleKeys[j]].filter(
+              (index: number): boolean => index !== ruleIndicesCopy[ruleKeys[i]][0],
+            );
+          }
+        }
+      } else {
+        allIndicesUnique = false;
+      }
+    }
+  }
+  return ruleIndicesCopy;
+}
+
+function departureProduct(ruleIndices: {[num: string]: number[]}, ticket: number[]): number {
+  const ruleKeys: string[] = Object.keys(ruleIndices);
+  let product: number = 1;
+  for (let i: number = 0; i < ruleKeys.length; i += 1) {
+    if (ruleKeys[i].startsWith('departure')) {
+      product *= ticket[ruleIndices[ruleKeys[i]][0]];
+    }
+  }
+  return product;
+}
+
+const [rules, yourTicket, nearbyTickets]: [
+  {[num: string]: number[]}, number[], number[][]
+] = getInputs('input.txt');
+console.log(errorRate(rules, nearbyTickets));
+console.log(
+  departureProduct(
+    reduceRuleIndices(
+      getAllIndicesForRule(
+        rules,
+        getValidTickets(
+          rules,
+          nearbyTickets,
+        ),
+      ),
+    ),
+    yourTicket,
+  ),
+);
