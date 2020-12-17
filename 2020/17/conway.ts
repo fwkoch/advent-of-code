@@ -16,33 +16,73 @@ function getLinearIndex(index: number[], dims: number[]): number {
   let linearIndex: number = 0;
   let dimProduct: number;
   for (let i = 0; i < index.length; i += 1) {
-    dimProduct = dims.slice(i + 1).reduce((a: number, b: number): number => a * b, 1);
+    dimProduct = dims.slice(0, i).reduce((a: number, b: number): number => a * b, 1);
     linearIndex += index[i] * dimProduct;
   }
   return linearIndex;
 }
 
+function indexPermutations(shape: [number, number]): number[][] {
+  const permutations: number[][] = [];
+  if (shape[1] === 1) {
+    for (let i: number = 0; i < shape[0]; i += 1) {
+      permutations.push([i]);
+    }
+    return permutations;
+  }
+  indexPermutations([shape[0], shape[1] - 1]).forEach((perm: number[]): void => {
+    for (let i: number = 0; i < shape[0]; i += 1) {
+      permutations.push([i].concat(perm));
+    }
+  });
+  return permutations;
+}
+
+function variablePermutations(shapes: number[]): number[][] {
+  const allPerms: number[][] = indexPermutations([Math.max(...shapes), shapes.length]);
+  const permutations: number[][] = [];
+  let valid: boolean;
+  allPerms.forEach((perm: number[]): void => {
+    valid = true;
+    for (let i: number = 0; i < shapes.length; i += 1) {
+      if (perm[i] >= shapes[i]) {
+        valid = false;
+      }
+    }
+    if (valid) {
+      permutations.push(perm);
+    }
+  });
+  return permutations;
+}
+
+function getRange(start: number, stop: number): number[] {
+  const output: number[] = [];
+  for (let i: number = start; i <= stop; i += 1) {
+    output.push(i);
+  }
+  return output;
+}
+
 function status(input: string[], index: number[], dims: number[]) {
   const neighbors: string[] = [];
   let current: string = '.';
-  const ranges: [number, number][] = [];
+  const ranges: number[][] = [];
+  let thisIndex: number[];
   for (let i: number = 0; i < index.length; i += 1) {
-    ranges.push([
-      Math.max(0, index[i] - 1),
-      Math.min(dims[i] - 1, index[i] + 1),
-    ]);
+    ranges.push(getRange(Math.max(0, index[i] - 1), Math.min(dims[i] - 1, index[i] + 1)));
   }
-  for (let i: number = ranges[0][0]; i <= ranges[0][1]; i += 1) {
-    for (let j: number = ranges[1][0]; j <= ranges[1][1]; j += 1) {
-      for (let k: number = ranges[2][0]; k <= ranges[2][1]; k += 1) {
-        if (i !== index[0] || j !== index[1] || k !== index[2]) {
-          neighbors.push(input[getLinearIndex([i, j, k], dims)]);
-        } else {
-          current = input[getLinearIndex([i, j, k], dims)];
-        }
-      }
+  const permutations: number[][] = variablePermutations(
+    ranges.map((val: number[]): number => val.length),
+  );
+  permutations.forEach((perm: number[]): void => {
+    thisIndex = perm.map((val: number, i: number): number => ranges[i][val]);
+    if (thisIndex.filter((val: number, i: number): boolean => val !== index[i]).length !== 0) {
+      neighbors.push(input[getLinearIndex(thisIndex, dims)]);
+    } else {
+      current = input[getLinearIndex(thisIndex, dims)];
     }
-  }
+  });
   const activeNeighbors: number = neighbors.filter((val: string): boolean => val === '#').length;
   if (current === '#' && activeNeighbors !== 2 && activeNeighbors !== 3) {
     return '.';
@@ -55,15 +95,23 @@ function status(input: string[], index: number[], dims: number[]) {
 
 function cycle(input: string[], dims: number[]): string[] {
   const output: string[] = [];
-  for (let i: number = -1; i <= dims[0]; i += 1) {
-    for (let j: number = -1; j <= dims[1]; j += 1) {
-      for (let k: number = -1; k <= dims[2]; k += 1) {
-        output[
-          getLinearIndex([i + 1, j + 1, k + 1], [dims[0] + 2, dims[1] + 2, dims[2] + 2])
-        ] = status(input, [i, j, k], dims);
-      }
-    }
+  const ranges: number[][] = [];
+  let linearIndex: number;
+  let thisIndex: number[];
+  for (let i: number = 0; i < dims.length; i += 1) {
+    ranges.push(getRange(-1, dims[i]));
   }
+  const permutations: number[][] = variablePermutations(
+    ranges.map((val: number[]): number => val.length),
+  );
+  permutations.forEach((perm: number[]): void => {
+    thisIndex = perm.map((val: number, i: number): number => ranges[i][val]);
+    linearIndex = getLinearIndex(
+      thisIndex.map((val: number): number => val + 1),
+      dims.map((val: number): number => val + 2),
+    );
+    output[linearIndex] = status(input, thisIndex, dims);
+  });
   return output;
 }
 
@@ -85,3 +133,4 @@ function runCycles(numCycles: number, input: string[], dims: number[]): number {
 
 const [output, dims]: [string[], number[]] = getStart('input.txt');
 console.log(runCycles(6, output, dims));
+console.log(runCycles(6, output, dims.concat([1])));
