@@ -25,7 +25,25 @@ function evaluateNoParen(expression: string): number {
   return operand;
 }
 
-function evaluateParen(expression: string): number {
+function evaluatePlusesRule(expression: string): number {
+  const components: string[] = expression.split(' ');
+  let i: number = 0;
+  if (components.indexOf('+') === -1 || components.indexOf('*') === -1) {
+    return evaluateNoParen(expression);
+  }
+  while (components[i] !== '+' && i < components.length) {
+    i += 1;
+  }
+  return evaluatePlusesRule(
+    components.slice(0, i - 1).concat(
+      [evaluateNoParen(components.slice(i - 1, i + 2).join(' ')).toString()],
+    ).concat(
+      components.slice(i + 2),
+    ).join(' '),
+  );
+}
+
+function evaluateParen(expression: string, plusesRuleDude: boolean): number {
   let parenStart: number = -1;
   let i: number = 0;
   while (expression[i] !== ')' && i < expression.length) {
@@ -35,6 +53,9 @@ function evaluateParen(expression: string): number {
     i += 1;
   }
   if (i === expression.length) {
+    if (plusesRuleDude) {
+      return evaluatePlusesRule(expression);
+    }
     return evaluateNoParen(expression);
   }
   if (parenStart === -1) {
@@ -42,17 +63,19 @@ function evaluateParen(expression: string): number {
   }
   return evaluateParen(
     expression.slice(0, parenStart)
-    + evaluateParen(expression.slice(parenStart + 1, i))
+    + evaluateParen(expression.slice(parenStart + 1, i), plusesRuleDude)
     + expression.slice(i + 1),
+    plusesRuleDude,
   );
 }
 
-function sumOfResults(expressions: string[]): number {
+function sumOfResults(expressions: string[], plusesRuleDude: boolean): number {
   let sum: number = 0;
   expressions.forEach((expression: string): void => {
-    sum += evaluateParen(expression);
+    sum += evaluateParen(expression, plusesRuleDude);
   });
   return sum;
 }
 
-console.log(sumOfResults(getExpressions('input.txt')));
+console.log(sumOfResults(getExpressions('input.txt'), false));
+console.log(sumOfResults(getExpressions('input.txt'), true));
