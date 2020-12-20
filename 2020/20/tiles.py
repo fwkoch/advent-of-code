@@ -27,10 +27,6 @@ class Tile:
     def e(self):
         return "".join(row[-1] for row in self.grid)
 
-    @property
-    def edges(self):
-        return [self.n, self.e, self.s, self.w]
-
     def rotate(self):
         self.grid = [
             "".join(row[i] for row in self.grid[::-1]) for i in range(len(self.grid[0]))
@@ -63,17 +59,6 @@ class Tile:
         for row in self.grid:
             count += len([char for char in row if char == "#"])
         return count
-
-
-def get_edges_count(tiles):
-    edges_count = {}
-    for tile in tiles:
-        for edge in tile.edges:
-            if edge in edges_count:
-                edges_count[edge] += 1
-            else:
-                edges_count[edge] = 1
-    return edges_count
 
 
 def build_grid(tiles):
