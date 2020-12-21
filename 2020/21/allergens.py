@@ -33,6 +33,10 @@ def count_nonallergens(foods, matches):
     return count
 
 
+def get_allergen_list(matches):
+    return ",".join([matches[key] for key in sorted(matches.keys())])
+
+
 if __name__ == "__main__":
     with open("input.txt", "r") as fid:
         foods = []
@@ -45,3 +49,4 @@ if __name__ == "__main__":
             )
     matches = match_allergens(foods)
     print(count_nonallergens(foods, matches))
+    print(get_allergen_list(matches))
