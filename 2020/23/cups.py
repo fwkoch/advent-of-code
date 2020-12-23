@@ -2,31 +2,10 @@ class Link:
 
     registry = {}
 
-    def __init__(self, value, prev):
+    def __init__(self, value):
         self.value = value
-        self.prev = prev
-        self._next = None
+        self.next = None
         self.registry.update({value: self})
-
-    @property
-    def prev(self):
-        return self._prev
-
-    @prev.setter
-    def prev(self, value):
-        if value:
-            value._next = self
-        self._prev = value
-
-    @property
-    def next(self):
-        return self._next
-
-    @next.setter
-    def next(self, value):
-        if value:
-            value._prev = self
-        self._next = value
 
     def find(self, value):
         return self.registry[value]
@@ -46,16 +25,16 @@ class Game:
         return Game([int(cup) for cup in str(cups_int)])
 
     def __init__(self, input_list):
-        self.current = prev = Link(input_list[0], None)
+        self.current = prev = Link(input_list[0])
         for val in input_list[1:]:
-            prev = Link(val, prev)
+            prev.next = Link(val)
+            prev = prev.next
         prev.next = self.current
         self.max = max(input_list)
 
     def move(self):
         pickup = self.current.next
         self.current.next = self.current.next.next.next.next
-        pickup.prev = None
         pickup.next.next.next = None
         pickup_list = pickup.to_list()
         next_value = self.current.value - 1
