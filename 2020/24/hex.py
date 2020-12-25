@@ -33,14 +33,28 @@ def traverse(line):
 def flip(lines):
     black_tiles = set()
     for line in lines:
-        tile = traverse(line.strip())
-        if tile in black_tiles:
-            black_tiles.remove(tile)
-        else:
-            black_tiles.add(tile)
+        black_tiles.symmetric_difference_update({traverse(line.strip())})
     return black_tiles
+
+def adjacent(tile):
+    deltas = [[2, 0], [1, 1], [-1, 1], [-2, 0], [-1, -1], [1, -1]]
+    return {(tile[0] + d[0], tile[1] + d[1]) for d in deltas}
+
+def daily_flip(tiles):
+    new_tiles = set()
+    for tile in tiles:
+        neighbors = adjacent(tile)
+        if 0 < len(neighbors.intersection(tiles)) < 3:
+            new_tiles.add(tile)
+        for neighbor in neighbors.difference(tiles):
+            if len(adjacent(neighbor).intersection(tiles)) == 2:
+                new_tiles.add(neighbor)
+    return new_tiles
 
 if __name__ == "__main__":
     with open('input.txt', 'r') as file:
         tiles = flip(file.readlines())
+    print(len(tiles))
+    for _ in range(100):
+        tiles = daily_flip(tiles)
     print(len(tiles))
