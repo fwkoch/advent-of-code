@@ -31,19 +31,16 @@ def traverse(line):
     return tuple(loc)
 
 def flip(lines):
-    tiles = {}
+    black_tiles = set()
     for line in lines:
         tile = traverse(line.strip())
-        if tile in tiles:
-            tiles[tile] = not tiles[tile]
+        if tile in black_tiles:
+            black_tiles.remove(tile)
         else:
-            tiles[tile] = True
-    return tiles
-
-def total_black_aka_true(tiles):
-    return sum(val for val in tiles.values())
+            black_tiles.add(tile)
+    return black_tiles
 
 if __name__ == "__main__":
     with open('input.txt', 'r') as file:
         tiles = flip(file.readlines())
-    print(total_black_aka_true(tiles))
+    print(len(tiles))
