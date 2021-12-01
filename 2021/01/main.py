@@ -12,6 +12,13 @@ def count_increases(depths):
     return count
 
 
+def windows(depths, size):
+    windows = [sum(depths[i : i + size]) for i in range(len(depths) - size + 1)]
+    return windows
+
+
 if __name__ == "__main__":
     assert count_increases(read_input("./test_input.txt")) == 7
     print(count_increases(read_input("./input.txt")))
+    assert count_increases(windows(read_input("./test_input.txt"), 3)) == 5
+    print(count_increases(windows(read_input("./input.txt"), 3)))
