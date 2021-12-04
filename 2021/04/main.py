@@ -5,9 +5,6 @@ class BingoBoard(BaseModel):
     rows: list[list[int]] = []
     cols: list[list[int]] = []
 
-    def sum(self):
-        return sum(sum(row) for row in self.rows)
-
     def all_vals(self):
         return set(sum(self.rows, []))
 
