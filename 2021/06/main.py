@@ -1,36 +1,25 @@
-children_cache = {}
-
-
-def lanterfish_children(length):
-    if length not in children_cache:
-        children_cache[length] = [length - 1 - i for i in range(8, length, 7)]
-    return children_cache[length]
-
-
-def lanternfish_count(start, time):
-    uncounted = [8 - start + time]
-    counted = []
-    while uncounted:
-        uncounted += lanterfish_children(uncounted[0])
-        counted.append(uncounted[0])
-        uncounted = uncounted[1:]
-    return len(counted)
-
-
-def lanternfish_counts(starts, time):
-    return sum(
-        [starts.count(start) * lanternfish_count(start, time) for start in set(starts)]
-    )
-
-
 def read_input(filename):
     with open(filename, "r") as fid:
         return [int(val) for val in fid.readline().split(",")]
+
+
+def lanternfish_counts(starts, time):
+    ages = {age: starts.count(age) for age in range(9)}
+    for i in range(time):
+        new_ages = {age: 0 for age in range(9)}
+        new_ages[8] += ages[0]
+        new_ages[6] += ages[0]
+        for i in range(8):
+            new_ages[i] += ages[i + 1]
+        ages = new_ages
+    return sum(ages.values())
 
 
 if __name__ == "__main__":
     test_fish = read_input("./test_input.txt")
     assert lanternfish_counts(test_fish, 18) == 26
     assert lanternfish_counts(test_fish, 80) == 5934
+    assert lanternfish_counts(test_fish, 256) == 26984457539
     fish = read_input("./input.txt")
     print(lanternfish_counts(fish, 80))
+    print(lanternfish_counts(fish, 256))
