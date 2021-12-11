@@ -37,8 +37,23 @@ def count_flashes(octopi, steps):
     return total
 
 
+def find_simultaneous_flash(octopi):
+    expected = len(octopi) * len(octopi[0])
+    steps = 0
+    while True:
+        steps += 1
+        count, octopi = step(octopi)
+        if count == expected:
+            break
+    return steps
+
+
 if __name__ == "__main__":
     test_oct = read_input("./test_input.txt")
     assert count_flashes(test_oct, 100) == 1656
-    oct = read_input("./input.txt")
-    print(count_flashes(oct, 100))
+    octopi = read_input("./input.txt")
+    print(count_flashes(octopi, 100))
+    test_oct = read_input("./test_input.txt")
+    assert find_simultaneous_flash(test_oct) == 195
+    octopi = read_input("./input.txt")
+    print(find_simultaneous_flash(octopi))
