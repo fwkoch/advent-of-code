@@ -1,6 +1,11 @@
 from pydantic import BaseModel
 
 
+def has_no_duplicate_smalls(path):
+    smalls = [name for name in path if name.lower() == name]
+    return len(smalls) == len(set(smalls))
+
+
 class Cave(BaseModel):
     name: str
     connections: set[str] = set()
@@ -9,16 +14,20 @@ class Cave(BaseModel):
     def small(self):
         return self.name.lower() == self.name
 
-    def routes(self, dest, path, caves):
+    def routes(self, dest, path, caves, allow_double_visit=False):
         path = path + [self.name]
         if self.name == dest:
             return [path]
         paths = []
         for conn in self.connections:
-            cave = caves[conn]
-            if cave.small and cave.name in path:
+            if conn == "start":
                 continue
-            paths += cave.routes(dest, path, caves)
+            cave = caves[conn]
+            if allow_double_visit and has_no_duplicate_smalls(path):
+                pass
+            elif cave.small and cave.name in path:
+                continue
+            paths += cave.routes(dest, path, caves, allow_double_visit)
         return paths
 
 
@@ -45,3 +54,13 @@ if __name__ == "__main__":
     assert len(test_caves["start"].routes("end", [], test_caves)) == 226
     caves = load_caves("input.txt")
     print(len(caves["start"].routes("end", [], caves)))
+
+    test_caves = load_caves("test_input_0.txt")
+    print(len(test_caves["start"].routes("end", [], test_caves, True)))
+    assert len(test_caves["start"].routes("end", [], test_caves, True)) == 36
+    test_caves = load_caves("test_input_1.txt")
+    assert len(test_caves["start"].routes("end", [], test_caves, True)) == 103
+    test_caves = load_caves("test_input_2.txt")
+    assert len(test_caves["start"].routes("end", [], test_caves, True)) == 3509
+    caves = load_caves("input.txt")
+    print(len(caves["start"].routes("end", [], caves, True)))
