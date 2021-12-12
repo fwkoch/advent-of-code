@@ -56,7 +56,6 @@ if __name__ == "__main__":
     print(len(caves["start"].routes("end", [], caves)))
 
     test_caves = load_caves("test_input_0.txt")
-    print(len(test_caves["start"].routes("end", [], test_caves, True)))
     assert len(test_caves["start"].routes("end", [], test_caves, True)) == 36
     test_caves = load_caves("test_input_1.txt")
     assert len(test_caves["start"].routes("end", [], test_caves, True)) == 103
