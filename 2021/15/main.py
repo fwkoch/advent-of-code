@@ -44,6 +44,27 @@ def read_input(filename):
     return positions
 
 
+def grow_cave(positions):
+    original_dims = (
+        max([p[0] for p in positions]) + 1,
+        max([p[1] for p in positions]) + 1,
+    )
+    new_positions = {}
+    for i in range(5):
+        for j in range(5):
+            for position in positions:
+                new_position = (
+                    i * original_dims[0] + position[0],
+                    j * original_dims[1] + position[1],
+                )
+                new_value = (positions[position].value + i + j - 1) % 9 + 1
+                new_positions[new_position] = Position(
+                    value=new_value, location=new_position
+                )
+    new_positions[(0, 0)].minimum_risk = 0
+    return new_positions
+
+
 def iterate_for_minimum_risks(positions):
     something_changed = True
     while something_changed:
@@ -59,4 +80,8 @@ if __name__ == "__main__":
     test_positions = read_input("test_input.txt")
     assert iterate_for_minimum_risks(test_positions) == 40
     positions = read_input("input.txt")
+    print(iterate_for_minimum_risks(positions))
+    test_positions = grow_cave(test_positions)
+    assert iterate_for_minimum_risks(test_positions) == 315
+    positions = grow_cave(positions)
     print(iterate_for_minimum_risks(positions))
