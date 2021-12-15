@@ -49,7 +49,7 @@ def iterate_for_minimum_risks(positions):
     while something_changed:
         something_changed = False
         for position in positions.values():
-            if position.compute_minimum_risk(positions) != position.minimum_risk:
+            if position.minimum_risk != position.compute_minimum_risk(positions):
                 something_changed = True
     bottom_right = (max([p[0] for p in positions]), max([p[1] for p in positions]))
     return positions[bottom_right].minimum_risk
