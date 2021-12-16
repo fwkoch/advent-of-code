@@ -1,10 +1,7 @@
 def hex_to_bin(message):
     packet = bin(int(message, 16))[2:]
-    if len(packet) % 4:
-        pad = "0" * (4 - len(packet) % 4)
-    else:
-        pad = ""
-    return pad + packet
+    pad = len(message) * 4 - len(packet)
+    return '0' * pad + packet
 
 
 def get_packets(packet):
@@ -36,6 +33,54 @@ def get_packets(packet):
     return packets, start
 
 
+def evaluate(packet):
+    type_id = int(packet[3:6], 2)
+    if type_id == 4:  # literal value
+        ind = 6
+        output_bin = packet[ind + 1 : ind + 5]
+        while packet[ind] == "1":
+            ind += 5
+            output_bin += packet[ind + 1 : ind + 5]
+        result = int(output_bin, 2)
+        return result, ind + 5
+    values = []
+    if packet[6] == "0":  # length type id
+        total_length = int(packet[7 : 7 + 15], 2)
+        start = 7 + 15
+        while start - (7 + 15) < total_length:
+            value, end = evaluate(packet[start:])
+            values.append(value)
+            start = start + end
+    else:
+        num_sub_packets = int(packet[7 : 7 + 11], 2)
+        start = 7 + 11
+        for _ in range(num_sub_packets):
+            value, end = evaluate(packet[start:])
+            values.append(value)
+            start = start + end
+    if type_id == 0:
+        result = sum(values)
+    elif type_id == 1:
+        result = 1
+        for value in values:
+            result *= value
+    elif type_id == 2:
+        result = min(values)
+    elif type_id == 3:
+        result = max(values)
+    elif type_id == 5:
+        assert len(values) == 2
+        result = int(values[0] > values[1])
+    elif type_id == 6:
+        assert len(values) == 2
+        result = int(values[0] < values[1])
+    elif type_id == 7:
+        assert len(values) == 2
+        result = int(values[0] == values[1])
+
+    return result, start
+
+
 def get_version(packet):
     return int(packet[:3], 2)
 
@@ -65,3 +110,14 @@ if __name__ == "__main__":
     assert add_versions("C0015000016115A2E0802F182340") == 23
     assert add_versions("A0016C880162017C3686B18A3D4780") == 31
     print(add_versions(read_input("input.txt")))
+
+    assert evaluate(hex_to_bin("C200B40A82"))[0] == 3
+    assert evaluate(hex_to_bin("04005AC33890"))[0] == 54
+    assert evaluate(hex_to_bin("880086C3E88112"))[0] == 7
+    assert evaluate(hex_to_bin("CE00C43D881120"))[0] == 9
+    assert evaluate(hex_to_bin("D8005AC2A8F0"))[0] == 1
+    assert evaluate(hex_to_bin("F600BC2D8F"))[0] == 0
+    assert evaluate(hex_to_bin("9C005AC2F8F0"))[0] == 0
+    assert evaluate(hex_to_bin("9C0141080250320F1802104A08"))[0] == 1
+
+    print(evaluate(hex_to_bin(read_input('input.txt')))[0])
