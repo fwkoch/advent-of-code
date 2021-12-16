@@ -1,36 +1,36 @@
 def hex_to_bin(message):
     packet = bin(int(message, 16))[2:]
     pad = len(message) * 4 - len(packet)
-    return '0' * pad + packet
+    return "0" * pad + packet
 
 
-def get_packets(packet):
+def get_version_sum(packet):
+    version = int(packet[:3], 2)
     type_id = int(packet[3:6], 2)
     if type_id == 4:  # literal value
         ind = 6
-        output_bin = packet[ind + 1 : ind + 5]
         while packet[ind] == "1":
             ind += 5
-            output_bin += packet[ind + 1 : ind + 5]
-        value = int(output_bin, 2)
-        return [packet[: ind + 5]], ind + 5
-    packets = []
+        return version, ind + 5
     if packet[6] == "0":  # length type id
         total_length = int(packet[7 : 7 + 15], 2)
         start = 7 + 15
         while start - (7 + 15) < total_length:
-            sub_packets, end = get_packets(packet[start:])
-            packets += sub_packets
+            sub_version, end = get_version_sum(packet[start:])
+            version += sub_version
             start = start + end
     else:
         num_sub_packets = int(packet[7 : 7 + 11], 2)
         start = 7 + 11
         for _ in range(num_sub_packets):
-            sub_packets, end = get_packets(packet[start:])
-            packets += sub_packets
+            sub_version, end = get_version_sum(packet[start:])
+            version += sub_version
             start = start + end
-    packets = [packet[:start]] + packets
-    return packets, start
+    return version, start
+
+
+def add_versions(message):
+    return get_version_sum(hex_to_bin(message))[0]
 
 
 def evaluate(packet):
@@ -81,16 +81,6 @@ def evaluate(packet):
     return result, start
 
 
-def get_version(packet):
-    return int(packet[:3], 2)
-
-
-def add_versions(message):
-    packet = hex_to_bin(message)
-    packets = get_packets(packet)[0]
-    return sum([get_version(p) for p in packets])
-
-
 def read_input(filename):
     with open(filename, "r") as fid:
         return fid.readline().strip()
@@ -99,7 +89,7 @@ def read_input(filename):
 if __name__ == "__main__":
     message = "D2FE28"
     assert hex_to_bin(message) == "110100101111111000101000"
-    assert get_packets(hex_to_bin(message)) == (["110100101111111000101"], 21)
+    assert add_versions(message) == 6
     message = "38006F45291200"
     assert (
         hex_to_bin(message)
@@ -120,4 +110,4 @@ if __name__ == "__main__":
     assert evaluate(hex_to_bin("9C005AC2F8F0"))[0] == 0
     assert evaluate(hex_to_bin("9C0141080250320F1802104A08"))[0] == 1
 
-    print(evaluate(hex_to_bin(read_input('input.txt')))[0])
+    print(evaluate(hex_to_bin(read_input("input.txt")))[0])
