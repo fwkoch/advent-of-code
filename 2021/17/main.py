@@ -35,13 +35,16 @@ def launch_a_ton_of_probes(target):
     x_vel_range = range(target[1] + 1)
     y_vel_range = range(target[2], target[3] + target[1] + 1)
     max_height = target[2]
+    count = 0
     for x in x_vel_range:
         for y in y_vel_range:
             probe = Probe(velocity=(x, y))
             height = probe.height_on_hit(target)
-            if height is not None and height > max_height:
-                max_height = height
-    return max_height
+            if height is not None:
+                count += 1
+                if height > max_height:
+                    max_height = height
+    return max_height, count
 
 
 if __name__ == "__main__":
@@ -50,6 +53,6 @@ if __name__ == "__main__":
     assert Probe(velocity=(6, 3)).height_on_hit(test_area) == 6
     assert Probe(velocity=(9, 0)).height_on_hit(test_area) == 0
     assert Probe(velocity=(17, -4)).height_on_hit(test_area) is None
-    assert launch_a_ton_of_probes(test_area) == 45
+    assert launch_a_ton_of_probes(test_area) == (45, 112)
     area = (195, 238, -93, -67)
     print(launch_a_ton_of_probes(area))
