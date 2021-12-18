@@ -115,6 +115,22 @@ def compute_sum(filename):
     return state.magnitude()
 
 
+def compute_greatest_sum(filename):
+    with open(filename, "r") as fid:
+        inputs = [line.strip() for line in fid.readlines()]
+    largest = 0
+    for i in range(len(inputs)):
+        for j in range(len(inputs)):
+            if i == j:
+                continue
+            a = SnailfishNumber.from_input(inputs[i])
+            b = SnailfishNumber.from_input(inputs[j])
+            mag = a.add(b).magnitude()
+            if mag > largest:
+                largest = mag
+    return largest
+
+
 if __name__ == "__main__":
     a = SnailfishNumber.from_input("[[[[[9,8],1],2],3],4]")
     b = SnailfishNumber.from_input("[7,[6,[5,[4,[3,2]]]]]")
@@ -162,3 +178,6 @@ if __name__ == "__main__":
     )
     assert compute_sum("test_input.txt") == 4140
     print(compute_sum("input.txt"))
+
+    assert compute_greatest_sum("test_input.txt") == 3993
+    print(compute_greatest_sum("input.txt"))
