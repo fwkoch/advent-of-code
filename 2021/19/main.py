@@ -82,6 +82,7 @@ def read_input(filename):
 def find_all_beacons(scanners):
     start = scanners[0]
     remaining = scanners[1:]
+    scanner_locations = [[0, 0, 0]]
     while remaining:
         print(len(remaining))
         for scanner in remaining:
@@ -89,18 +90,36 @@ def find_all_beacons(scanners):
             if not pairs:
                 continue
             order, sign, diff = find_rotation(pairs)
+            scanner_locations.append(diff)
             beacons = [
                 tuple([diff[i] + beacon[order[i]] * sign[i] for i in range(3)])
                 for beacon in scanner.beacons
             ]
             start.beacons = list(set(start.beacons + beacons))
             remaining.remove(scanner)
-    return start.beacons
+    return start.beacons, scanner_locations
+
+
+def manhattan_distance(a, b):
+    return sum([abs(a[i] - b[i]) for i in range(3)])
+
+
+def greatest_distance(beacons):
+    max_dist = 0
+    for i in range(len(beacons)):
+        for j in range(i + 1, len(beacons)):
+            distance = manhattan_distance(beacons[i], beacons[j])
+            if distance > max_dist:
+                max_dist = distance
+    return max_dist
 
 
 if __name__ == "__main__":
     test_scanners = read_input("test_input.txt")
-    assert len(find_all_beacons(test_scanners)) == 79
+    test_all_beacons, test_all_scanners = find_all_beacons(test_scanners)
+    assert len(test_all_beacons) == 79
+    assert greatest_distance(test_all_scanners) == 3621
     scanners = read_input("input.txt")
-    all_beacons = find_all_beacons(scanners)
+    all_beacons, all_scanners = find_all_beacons(scanners)
     print(len(all_beacons))
+    print(greatest_distance(all_scanners))
