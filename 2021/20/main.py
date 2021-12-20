@@ -39,3 +39,5 @@ if __name__ == "__main__":
     assert count_lit(enhance(test_alg, test_img, 2)) == 35
     alg, img = read_input("input.txt")
     print(count_lit(enhance(alg, img, 2)))
+    assert count_lit(enhance(test_alg, test_img, 50)) == 3351
+    print(count_lit(enhance(alg, img, 50)))
